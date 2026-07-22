@@ -1,0 +1,2455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>둥근 24시간 시간표</title>
+<script>
+(function () {
+  try {
+    var theme = localStorage.getItem("roundClock_theme");
+    if (theme === "light" || theme === "dark") {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  } catch (e) {
+    // localStorage unavailable — fall back to system preference
+  }
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Pen+Script&family=Single+Day&family=Nanum+Brush+Script&family=Hi+Melody&family=Gowun+Dodum&family=Jua&family=Nanum+Gothic:wght@400;700&family=Noto+Sans+KR:wght@400;700&family=Black+Han+Sans&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+
+  :root {
+    color-scheme: light;
+    --bg: #f4f1ea;
+    --ink: #4a3f2f;
+    --ink-muted: #6b5c45;
+    --ink-soft: #8a7550;
+    --ink-faint: #9a8c70;
+    --text-strong: #3a3530;
+    --accent: #c9a86a;
+    --accent-strong: #a9834a;
+    --accent-bg: #d9b374;
+    --accent-bg-hover: #cfa563;
+    --border: #ddca9e;
+    --border-soft: #e5d3a4;
+    --border-input: #ddc48c;
+    --border-faint: #ddd0b4;
+    --panel-bg: rgba(255, 253, 246, 0.55);
+    --card-bg: #fffdf6;
+    --input-bg: #fffefb;
+    --event-item-bg: #fff;
+    --event-item-border: #eee0c8;
+    --event-current-bg: #fff2cf;
+    --event-current-border: #e8c26a;
+    --event-current-shadow: rgba(232, 163, 61, 0.25);
+    --error: #b3453f;
+    --alarm-color: #b8863f;
+    --tick-major: #6b5c45;
+    --tick-minor: #b8a982;
+    --tick-label: #4a3f2f;
+    --resize-color: #5a8fa8;
+    --clock-face-fill: #fffdf8;
+    --clock-face-stroke: #ddd0b4;
+    --hand-color: #3a3530;
+    --dot-border: rgba(0, 0, 0, 0.15);
+    --notice-bg: #fdeec0;
+    --notice-border: #e0be6f;
+    --notice-text: #5a4a2a;
+    --shadow-soft: rgba(120, 95, 50, 0.08);
+    --shadow-btn: rgba(150, 115, 60, 0.2);
+    --shadow-toast: rgba(150, 115, 60, 0.15);
+    --shadow-tooltip: rgba(150, 115, 60, 0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #1b1712;
+      --ink: #f0e9da;
+      --ink-muted: #d8c9a8;
+      --ink-soft: #b8a888;
+      --ink-faint: #8a7d64;
+      --text-strong: #f0e9da;
+      --accent: #d9b46a;
+      --accent-strong: #d9b46a;
+      --accent-bg: #b8863f;
+      --accent-bg-hover: #a8763a;
+      --border: #4a4030;
+      --border-soft: #453b2c;
+      --border-input: #55492f;
+      --border-faint: #4a4030;
+      --panel-bg: rgba(40, 35, 26, 0.55);
+      --card-bg: #241f18;
+      --input-bg: #2a2419;
+      --event-item-bg: #241f18;
+      --event-item-border: #3a3226;
+      --event-current-bg: #3d341c;
+      --event-current-border: #7a5f28;
+      --event-current-shadow: rgba(232, 163, 61, 0.2);
+      --error: #e0847a;
+      --alarm-color: #d9ad5a;
+      --tick-major: #d8c9a8;
+      --tick-minor: #6b5f48;
+      --tick-label: #f0e9da;
+      --resize-color: #7fb8d6;
+      --clock-face-fill: #241f18;
+      --clock-face-stroke: #4a4030;
+      --hand-color: #f0e9da;
+      --dot-border: rgba(255, 255, 255, 0.25);
+      --notice-bg: #3a2f16;
+      --notice-border: #6b5626;
+      --notice-text: #e8d9a8;
+      --shadow-soft: rgba(0, 0, 0, 0.3);
+      --shadow-btn: rgba(0, 0, 0, 0.35);
+      --shadow-toast: rgba(0, 0, 0, 0.35);
+      --shadow-tooltip: rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #1b1712;
+    --ink: #f0e9da;
+    --ink-muted: #d8c9a8;
+    --ink-soft: #b8a888;
+    --ink-faint: #8a7d64;
+    --text-strong: #f0e9da;
+    --accent: #d9b46a;
+    --accent-strong: #d9b46a;
+    --accent-bg: #b8863f;
+    --accent-bg-hover: #a8763a;
+    --border: #4a4030;
+    --border-soft: #453b2c;
+    --border-input: #55492f;
+    --border-faint: #4a4030;
+    --panel-bg: rgba(40, 35, 26, 0.55);
+    --card-bg: #241f18;
+    --input-bg: #2a2419;
+    --event-item-bg: #241f18;
+    --event-item-border: #3a3226;
+    --event-current-bg: #3d341c;
+    --event-current-border: #7a5f28;
+    --event-current-shadow: rgba(232, 163, 61, 0.2);
+    --error: #e0847a;
+    --alarm-color: #d9ad5a;
+    --tick-major: #d8c9a8;
+    --tick-minor: #6b5f48;
+    --tick-label: #f0e9da;
+    --resize-color: #7fb8d6;
+    --clock-face-fill: #241f18;
+    --clock-face-stroke: #4a4030;
+    --hand-color: #f0e9da;
+    --dot-border: rgba(255, 255, 255, 0.25);
+    --notice-bg: #3a2f16;
+    --notice-border: #6b5626;
+    --notice-text: #e8d9a8;
+    --shadow-soft: rgba(0, 0, 0, 0.3);
+    --shadow-btn: rgba(0, 0, 0, 0.35);
+    --shadow-toast: rgba(0, 0, 0, 0.35);
+    --shadow-tooltip: rgba(0, 0, 0, 0.35);
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: var(--bg);
+    color: var(--ink);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .app {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  .clock-panel {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: transparent;
+    --clock-font: 'Noto Sans KR', sans-serif;
+    --title-font-size: 22px;
+    --time-font-size: 40px;
+  }
+
+  .live-time-title {
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .title-text {
+    font-size: var(--title-font-size);
+    font-weight: 700;
+    color: var(--ink-muted);
+    letter-spacing: 0.02em;
+    margin-bottom: 2px;
+    font-family: var(--clock-font);
+  }
+
+  .time-text {
+    font-size: var(--time-font-size);
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    font-family: var(--clock-font);
+  }
+
+  .live-time-title.mode-time .title-text {
+    display: none;
+  }
+
+  .live-time-title.mode-title .time-text {
+    display: none;
+  }
+
+  #clock-svg {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+    margin-top: -80px;
+  }
+
+  .list-panel {
+    flex: 0 0 260px;
+    max-width: 260px;
+    padding: 18px 16px;
+    background: var(--panel-bg);
+    border-right: 2px solid var(--border);
+    overflow-y: auto;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  .list-panel .event-list {
+    max-height: none;
+  }
+
+  .side-panel {
+    flex: 0 0 300px;
+    max-width: 300px;
+    padding: 18px 16px;
+    background: var(--panel-bg);
+    border-left: 2px solid var(--border);
+    overflow-y: auto;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  .list-panel h2,
+  .side-panel h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: var(--ink-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px var(--shadow-soft);
+  }
+
+  .card-settings summary {
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink-muted);
+    letter-spacing: 0.02em;
+  }
+
+  .card-settings[open] summary {
+    margin-bottom: 10px;
+  }
+
+  .details-body > .row-2:not(:last-child),
+  .details-body > .field:not(:last-child),
+  .details-body > .range-field:not(:last-child) {
+    margin-bottom: 8px;
+  }
+
+  .hint-text {
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+
+  .range-field label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: var(--ink-muted);
+  }
+
+  .range-field input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+
+  .radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
+  .radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--text-strong);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .radio-group input {
+    cursor: pointer;
+  }
+
+  .field {
+    margin-bottom: 10px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: var(--ink-muted);
+  }
+
+  .row-2 {
+    display: flex;
+    gap: 8px;
+  }
+
+  .row-2 .field,
+  .row-2 .range-field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  input[type="time"],
+  input[type="text"],
+  select {
+    width: 100%;
+    padding: 7px 8px;
+    border: 1px solid var(--border-input);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    background: var(--input-bg);
+    color: var(--text-strong);
+  }
+
+  input[type="time"]:focus,
+  input[type="text"]:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .swatch.selected {
+    border-color: var(--ink-muted);
+    transform: scale(1.1);
+  }
+
+  .swatch-custom {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border-faint);
+    padding: 0;
+    background: none;
+    cursor: pointer;
+    overflow: hidden;
+  }
+
+  .swatch-custom input[type="color"] {
+    width: 40px;
+    height: 40px;
+    margin: -6px;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .btn-add {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--accent-strong);
+    border-radius: 10px;
+    background: var(--accent-bg);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 4px;
+    box-shadow: 0 2px 6px var(--shadow-btn);
+  }
+
+  .btn-add:hover {
+    background: var(--accent-bg-hover);
+  }
+
+  .btn-add:active {
+    box-shadow: 0 1px 3px var(--shadow-btn);
+  }
+
+  .error-msg {
+    color: var(--error);
+    font-size: 14px;
+    margin-top: 8px;
+    min-height: 0;
+  }
+
+  .event-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .event-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--event-item-bg);
+    border: 1px solid var(--event-item-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    transition: opacity 0.2s ease, background 0.2s ease;
+  }
+
+  .event-item.event-past {
+    opacity: 0.5;
+  }
+
+  .event-item.event-past .event-title,
+  .event-item.event-past .event-time {
+    text-decoration: line-through;
+  }
+
+  .event-item.event-completed {
+    opacity: 0.5;
+  }
+
+  .event-item.event-completed .event-title,
+  .event-item.event-completed .event-time {
+    text-decoration: line-through;
+  }
+
+  .event-complete-checkbox {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .event-item.event-current {
+    background: var(--event-current-bg);
+    border-color: var(--event-current-border);
+    box-shadow: 0 0 0 2px var(--event-current-shadow);
+  }
+
+  .event-color-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid var(--dot-border);
+  }
+
+  .event-time {
+    font-size: 14px;
+    color: var(--ink-muted);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .event-title {
+    flex: 1;
+    font-size: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .event-delete {
+    border: none;
+    background: none;
+    color: var(--error);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+
+  .event-empty {
+    font-size: 14px;
+    color: var(--ink-faint);
+    padding: 6px 2px;
+  }
+
+  .event-alarm-flag {
+    font-size: 13px;
+    color: var(--alarm-color);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-strong);
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .checkbox-label input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  #alarm-trigger-point {
+    padding: 6px 8px;
+    border: 1px solid var(--border-faint);
+    border-radius: 8px;
+    font-size: 13px;
+    background: var(--input-bg);
+    color: var(--text-strong);
+  }
+
+  #alarm-trigger-point:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .toast-container {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 300px;
+  }
+
+  .toast {
+    background: var(--card-bg);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: 0 4px 12px var(--shadow-toast);
+  }
+
+  .toast strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+
+  .toast div {
+    font-size: 14px;
+    color: var(--ink-muted);
+  }
+
+  .event-band {
+    cursor: pointer;
+  }
+
+  .event-band:hover {
+    filter: brightness(0.93);
+  }
+
+  .alarm-marker {
+    cursor: pointer;
+  }
+
+  #clock-face-circle {
+    fill: var(--clock-face-fill);
+    stroke: var(--clock-face-stroke);
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  .drag-preview-band {
+    pointer-events: none;
+  }
+
+  .draft-delete {
+    cursor: pointer;
+  }
+
+  .draft-delete-bg {
+    fill: var(--card-bg);
+    stroke: var(--error);
+    stroke-width: 1.5;
+  }
+
+  .draft-delete-icon {
+    font-size: 12px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: var(--error);
+    pointer-events: none;
+  }
+
+  #hand {
+    stroke: var(--hand-color);
+    transform-origin: 200px 200px;
+    transition: transform 0.25s linear;
+  }
+
+  .hand-center {
+    fill: var(--hand-color);
+  }
+
+  .tick-major {
+    stroke: var(--tick-major);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+
+  .tick-minor {
+    stroke: var(--tick-minor);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+  }
+
+  .tick-label {
+    font-size: 14px;
+    font-weight: 700;
+    fill: var(--tick-label);
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-family: var(--clock-font);
+  }
+
+  .digital-time {
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-size: 22px;
+    font-weight: 700;
+    fill: var(--tick-label);
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+
+  .event-label {
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-weight: 700;
+    fill: #3a3530;
+    font-family: var(--clock-font);
+    paint-order: stroke;
+    stroke: rgba(255, 255, 255, 0.65);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+    cursor: move;
+  }
+
+  .event-label.dragging {
+    cursor: grabbing;
+  }
+
+  .rotate-handle-bg {
+    fill: var(--card-bg);
+    stroke: var(--accent-strong);
+    stroke-width: 1.5;
+    opacity: 0;
+    cursor: grab;
+    transition: opacity 0.15s ease;
+  }
+
+  .rotate-handle-icon {
+    font-size: 11px;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: var(--accent-strong);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .event-group:hover .rotate-handle-bg,
+  .event-group:hover .rotate-handle-icon,
+  .rotate-handle-bg.active,
+  .rotate-handle-bg.active + .rotate-handle-icon {
+    opacity: 1;
+  }
+
+  .rotate-handle-bg.active {
+    cursor: grabbing;
+  }
+
+  .resize-handle-bg {
+    fill: var(--card-bg);
+    stroke: var(--resize-color);
+    stroke-width: 1.5;
+    opacity: 0;
+    cursor: ns-resize;
+    transition: opacity 0.15s ease;
+  }
+
+  .resize-handle-icon {
+    font-size: 10px;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: var(--resize-color);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .event-group:hover .resize-handle-bg,
+  .event-group:hover .resize-handle-icon,
+  .resize-handle-bg.active,
+  .resize-handle-bg.active + .resize-handle-icon {
+    opacity: 1;
+  }
+
+  .resize-handle-bg.active {
+    cursor: ns-resize;
+  }
+
+  .delete-handle-bg {
+    fill: var(--card-bg);
+    stroke: var(--error);
+    stroke-width: 1.5;
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  .delete-handle-icon {
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: var(--error);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .event-group:hover .delete-handle-bg,
+  .event-group:hover .delete-handle-icon {
+    opacity: 1;
+  }
+
+  .svg-tooltip {
+    position: fixed;
+    z-index: 10000;
+    background: var(--card-bg);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    pointer-events: none;
+    display: none;
+    box-shadow: 0 4px 10px var(--shadow-tooltip);
+    max-width: 220px;
+  }
+
+  .notice-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    background: var(--notice-bg);
+    border-bottom: 2px solid var(--notice-border);
+    font-size: 15px;
+    color: var(--notice-text);
+  }
+
+  .notice-banner[hidden] {
+    display: none;
+  }
+
+  .notice-banner button {
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+
+  .notice-allow-btn {
+    border: 1px solid var(--accent-strong);
+    background: var(--card-bg);
+    color: var(--ink);
+    padding: 5px 12px;
+    font-weight: 700;
+  }
+
+  .notice-dismiss-btn {
+    border: none;
+    background: none;
+    color: var(--ink-soft);
+    padding: 4px 6px;
+    font-size: 16px;
+  }
+
+  @media (max-width: 768px) {
+    .app {
+      flex-direction: column;
+    }
+
+    .list-panel,
+    .clock-panel,
+    .side-panel {
+      flex: 1 1 auto;
+    }
+
+    .clock-panel {
+      padding: 16px;
+      order: -1;
+    }
+
+    #clock-svg {
+      max-width: 380px;
+      margin-top: -55px;
+    }
+
+    .list-panel {
+      border-right: none;
+      border-top: 2px solid var(--border);
+      padding: 20px 16px;
+      max-width: none;
+    }
+
+    .list-panel .event-list {
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .side-panel {
+      border-left: none;
+      border-top: 2px solid var(--border);
+      padding: 20px 16px;
+      max-width: none;
+    }
+
+    .notice-banner {
+      font-size: 13px;
+      padding: 8px 12px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="notice-banner" id="notification-banner" hidden>
+  <span>🔔 알람을 받으려면 알림을 허용해주세요</span>
+  <button type="button" class="notice-allow-btn" id="notif-allow-btn">허용하기</button>
+  <button type="button" class="notice-dismiss-btn" id="notif-dismiss-btn" aria-label="닫기">✕</button>
+</div>
+
+<div class="app">
+  <div class="list-panel">
+    <h2>오늘의 할 일 목록</h2>
+    <div class="card card-list">
+      <ul class="event-list" id="event-list"></ul>
+    </div>
+  </div>
+
+  <div class="clock-panel">
+    <div class="live-time-title mode-time" id="live-time-title">
+      <div class="title-text" id="title-text-display">새 계획표</div>
+      <div class="time-text" id="time-text-display">00:00:00</div>
+    </div>
+    <svg id="clock-svg" viewBox="-80 -80 560 560">
+      <defs>
+        <symbol id="star-icon" viewBox="0 0 20 20">
+          <path d="M10 1.2 L12.35 7.2 L18.8 7.64 L13.85 11.76 L15.51 18 L10 14.4 L4.49 18 L6.15 11.76 L1.2 7.64 L7.65 7.2 Z"
+                fill="#f0ad4e" stroke="#8a5a20" stroke-width="0.8" stroke-linejoin="round"></path>
+        </symbol>
+      </defs>
+
+      <circle id="clock-face-circle" cx="200" cy="200" r="192" fill="#fffdf8" stroke="#ddd0b4" stroke-width="2"></circle>
+
+      <!-- Phase 2~3: 시간대 밴드 -->
+      <g id="event-bands"></g>
+
+      <g id="ticks-major"></g>
+      <g id="ticks-minor"></g>
+      <g id="tick-labels"></g>
+
+      <!-- Phase 2~3: 알람 마커 -->
+      <g id="alarm-markers"></g>
+
+      <g id="drag-preview"></g>
+
+      <g id="hand-group">
+        <line id="hand" x1="200" y1="200" x2="200" y2="150" stroke="#3a3530" stroke-width="3" stroke-linecap="round"></line>
+        <circle class="hand-center" cx="200" cy="200" r="6" fill="#3a3530"></circle>
+      </g>
+    </svg>
+  </div>
+
+  <div class="side-panel">
+    <details class="card card-settings">
+      <summary>표시 설정</summary>
+      <div class="details-body">
+        <div class="row-2">
+          <div class="field">
+            <label for="theme-select">화면 테마</label>
+            <select id="theme-select">
+              <option value="system">시스템 설정 따르기</option>
+              <option value="light">라이트</option>
+              <option value="dark">다크</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="clock-style-select">시계판 모양</label>
+            <select id="clock-style-select">
+              <option value="donut">도넛형 (기본)</option>
+              <option value="thinBand">얇은 밴드형</option>
+              <option value="pie">파이형</option>
+              <option value="outline">아웃라인형</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="clock-font-select">시계 글자 폰트</label>
+            <select id="clock-font-select">
+              <option value="'Noto Sans KR', sans-serif">고딕 - Noto Sans KR</option>
+              <option value="'Nanum Gothic', sans-serif">고딕 - Nanum Gothic</option>
+              <option value="'Gowun Dodum', sans-serif">고운 고딕 - Gowun Dodum</option>
+              <option value="'Jua', sans-serif">둥근 고딕 - Jua</option>
+              <option value="'Black Han Sans', sans-serif">임팩트 고딕 - Black Han Sans</option>
+              <option value="'Gowun Batang', serif">바탕체 - Gowun Batang</option>
+              <option value="'Nanum Myeongjo', serif">명조체 - Nanum Myeongjo</option>
+              <option value="'Gaegu', 'Nanum Pen Script', sans-serif">손글씨 - Gaegu</option>
+              <option value="'Nanum Pen Script', cursive">손글씨 - Nanum Pen Script</option>
+              <option value="'Single Day', cursive">손글씨 - Single Day</option>
+              <option value="'Nanum Brush Script', cursive">붓글씨 - Nanum Brush Script</option>
+              <option value="'Hi Melody', cursive">손글씨 - Hi Melody</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="clock-title-input">시계 제목</label>
+            <input type="text" id="clock-title-input" placeholder="예: 새 계획표">
+          </div>
+          <div class="field">
+            <label>상단에 표시</label>
+            <div class="radio-group">
+              <label><input type="radio" name="title-mode" value="time"> 시간</label>
+              <label><input type="radio" name="title-mode" value="title"> 제목</label>
+              <label><input type="radio" name="title-mode" value="both"> 둘다</label>
+            </div>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="range-field">
+            <label for="band-thickness"><span>밴드 두께</span><span id="band-thickness-value">93px</span></label>
+            <input type="range" id="band-thickness" min="8" max="188" step="1" value="93">
+          </div>
+          <div class="range-field">
+            <label for="label-font-size"><span>할 일 글자</span><span id="label-font-size-value">14px</span></label>
+            <input type="range" id="label-font-size" min="9" max="24" step="1" value="14">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="range-field">
+            <label for="title-font-size"><span>제목 크기</span><span id="title-font-size-value">22px</span></label>
+            <input type="range" id="title-font-size" min="12" max="48" step="1" value="22">
+          </div>
+          <div class="range-field">
+            <label for="time-font-size"><span>시간 크기</span><span id="time-font-size-value">40px</span></label>
+            <input type="range" id="time-font-size" min="20" max="72" step="1" value="40">
+          </div>
+        </div>
+        <div class="hint-text">라벨을 드래그해 위치 이동, 손잡이(↻회전 · ↕크기) 조절, 더블클릭 리셋.</div>
+      </div>
+    </details>
+
+    <h2>시간 설정</h2>
+    <div class="card card-form">
+      <form id="event-form">
+        <div class="row-2">
+          <div class="field">
+            <label for="start-time">시작 시각</label>
+            <input type="time" id="start-time" required>
+          </div>
+          <div class="field">
+            <label for="end-time">종료 시각</label>
+            <input type="time" id="end-time" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="task-title">할 일</label>
+          <input type="text" id="task-title" placeholder="예: 운동" required>
+        </div>
+
+        <div class="field">
+          <label>색상</label>
+          <div class="swatches" id="swatches"></div>
+        </div>
+
+        <div class="field checkbox-field">
+          <label class="checkbox-label">
+            <input type="checkbox" id="alarm-enabled">
+            알람 설정
+          </label>
+          <select id="alarm-trigger-point" disabled>
+            <option value="start">시작 시각에 울림</option>
+            <option value="end">종료 시각에 울림</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-add">추가</button>
+        <div class="error-msg" id="error-msg"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<div class="svg-tooltip" id="svg-tooltip"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CX = 200, CY = 200;
+  var RADIUS_MAJOR_OUTER = 95;
+  var RADIUS_MAJOR_INNER = 76;
+  var RADIUS_MINOR_OUTER = 95;
+  var RADIUS_MINOR_INNER = 87;
+  var RADIUS_LABEL = 58;
+  var BAND_OUTER_R = 188;
+  var BAND_INNER_R = 95;
+  var LABEL_RADIUS = (BAND_OUTER_R + BAND_INNER_R) / 2;
+  var LABEL_MAX_LINES_OVERRIDE = null;
+  var HANDLE_RADIUS = 7;
+  var MIN_LABEL_FONT_SIZE = 8;
+  var MAX_LABEL_FONT_SIZE = 32;
+  var FONT_SIZE_DRAG_SENSITIVITY = 0.2;
+  var MARKER_RADIUS = 208;
+  var ALARM_CHECK_INTERVAL_MS = 20000;
+  var DRAG_CREATE_SNAP_MINUTES = 10;
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  var LABEL_SETTINGS_KEY = "roundClock_labelSettings";
+  var TITLE_SETTINGS_KEY = "roundClock_titleSettings";
+  var CLOCK_STYLE_KEY = "roundClock_clockStyle";
+  var THEME_KEY = "roundClock_theme";
+
+  var CLOCK_STYLES = {
+    donut: {
+      faceR: 192,
+      bandOuter: 188, bandInner: 95,
+      tickMajorOuter: 95, tickMajorInner: 76,
+      tickMinorOuter: 95, tickMinorInner: 87,
+      hourLabelR: 58,
+      labelR: 141.5,
+      handLen: 50,
+      markerR: 208,
+      maxLinesOverride: null
+    },
+    thinBand: {
+      faceR: 195,
+      bandOuter: 145, bandInner: 95,
+      tickMajorOuter: 195, tickMajorInner: 175,
+      tickMinorOuter: 190, tickMinorInner: 180,
+      hourLabelR: 157,
+      labelR: 120,
+      handLen: 130,
+      markerR: 208,
+      maxLinesOverride: null
+    },
+    pie: {
+      faceR: 195,
+      bandOuter: 178, bandInner: 0,
+      tickMajorOuter: 195, tickMajorInner: 182,
+      tickMinorOuter: 195, tickMinorInner: 188,
+      hourLabelR: 187,
+      labelR: 89,
+      handLen: 50,
+      markerR: 208,
+      maxLinesOverride: null
+    },
+    outline: {
+      faceR: 195,
+      bandOuter: 192, bandInner: 178,
+      tickMajorOuter: 170, tickMajorInner: 155,
+      tickMinorOuter: 170, tickMinorInner: 160,
+      hourLabelR: 145,
+      labelR: 202,
+      handLen: 130,
+      markerR: 214,
+      maxLinesOverride: 2
+    }
+  };
+
+  var currentClockStyleKey = "donut";
+  var BAND_THICKNESS_KEY = "roundClock_bandThickness";
+  var clockThickness = {};
+
+  var PASTEL_COLORS = [
+    "#EF4444", "#14B8A6", "#F97316", "#3B82F6", "#F59E0B",
+    "#8B5CF6", "#16A34A", "#EC4899", "#84CC16", "#A16207"
+  ];
+
+  var selectedColor = PASTEL_COLORS[0];
+  var events = [];
+  var currentDateStr = "";
+  var tooltipTimer = null;
+  var labelSettings = { fontSize: 14 };
+  var titleSettings = {
+    mode: "time",
+    title: "새 계획표",
+    font: "'Noto Sans KR', sans-serif",
+    titleFontSize: 22,
+    timeFontSize: 40
+  };
+
+  function pad2(n) {
+    return n < 10 ? "0" + n : String(n);
+  }
+
+  function pointOnCircle(cx, cy, r, clockDeg) {
+    var rad = (clockDeg * Math.PI) / 180;
+    return {
+      x: cx + r * Math.sin(rad),
+      y: cy - r * Math.cos(rad)
+    };
+  }
+
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS(SVG_NS, tag);
+    for (var key in attrs) {
+      el.setAttribute(key, attrs[key]);
+    }
+    return el;
+  }
+
+  function timeToDeg(hhmm) {
+    var parts = hhmm.split(":");
+    var hh = parseInt(parts[0], 10);
+    var mm = parseInt(parts[1], 10);
+    return (hh * 60 + mm) * 0.25;
+  }
+
+  function angleFromCenter(svgPoint) {
+    var dx = svgPoint.x - CX;
+    var dy = svgPoint.y - CY;
+    var rad = Math.atan2(dx, -dy);
+    var deg = (rad * 180) / Math.PI;
+    return (deg + 360) % 360;
+  }
+
+  function degToTimeStr(deg, snapMinutes) {
+    var minutes = deg * 4;
+    minutes = Math.round(minutes / snapMinutes) * snapMinutes;
+    minutes = ((minutes % 1440) + 1440) % 1440;
+    var hh = Math.floor(minutes / 60);
+    var mm = minutes % 60;
+    return pad2(hh) + ":" + pad2(mm);
+  }
+
+  function describeArcBand(cx, cy, startDeg, endDeg, outerR, innerR) {
+    var diff = endDeg - startDeg;
+    var largeArc = diff > 180 ? 1 : 0;
+    var outerStart = pointOnCircle(cx, cy, outerR, startDeg);
+    var outerEnd = pointOnCircle(cx, cy, outerR, endDeg);
+    var innerStart = pointOnCircle(cx, cy, innerR, startDeg);
+    var innerEnd = pointOnCircle(cx, cy, innerR, endDeg);
+
+    return [
+      "M", outerStart.x, outerStart.y,
+      "A", outerR, outerR, 0, largeArc, 1, outerEnd.x, outerEnd.y,
+      "L", innerEnd.x, innerEnd.y,
+      "A", innerR, innerR, 0, largeArc, 0, innerStart.x, innerStart.y,
+      "Z"
+    ].join(" ");
+  }
+
+  function buildTicksAndLabels() {
+    var majorGroup = document.getElementById("ticks-major");
+    var minorGroup = document.getElementById("ticks-minor");
+    var labelGroup = document.getElementById("tick-labels");
+    majorGroup.innerHTML = "";
+    minorGroup.innerHTML = "";
+    labelGroup.innerHTML = "";
+
+    for (var hour = 0; hour < 24; hour++) {
+      var majorDeg = hour * 15;
+      var outer = pointOnCircle(CX, CY, RADIUS_MAJOR_OUTER, majorDeg);
+      var inner = pointOnCircle(CX, CY, RADIUS_MAJOR_INNER, majorDeg);
+      majorGroup.appendChild(svgEl("line", {
+        x1: outer.x, y1: outer.y, x2: inner.x, y2: inner.y,
+        class: "tick-major"
+      }));
+
+      if (hour % 6 === 0) {
+        var labelPos = pointOnCircle(CX, CY, RADIUS_LABEL, majorDeg);
+        var text = svgEl("text", {
+          x: labelPos.x, y: labelPos.y,
+          class: "tick-label"
+        });
+        text.textContent = String(hour);
+        labelGroup.appendChild(text);
+      }
+
+      for (var min = 10; min < 60; min += 10) {
+        var minorDeg = majorDeg + min * 0.25;
+        var mOuter = pointOnCircle(CX, CY, RADIUS_MINOR_OUTER, minorDeg);
+        var mInner = pointOnCircle(CX, CY, RADIUS_MINOR_INNER, minorDeg);
+        minorGroup.appendChild(svgEl("line", {
+          x1: mOuter.x, y1: mOuter.y, x2: mInner.x, y2: mInner.y,
+          class: "tick-minor"
+        }));
+      }
+    }
+  }
+
+  function showSvgTooltip(pointerEvent, text) {
+    var tooltip = document.getElementById("svg-tooltip");
+    var point = pointerEvent.touches && pointerEvent.touches[0] ? pointerEvent.touches[0] : pointerEvent;
+    tooltip.textContent = text;
+    tooltip.style.display = "block";
+    tooltip.style.left = (point.clientX + 12) + "px";
+    tooltip.style.top = (point.clientY + 12) + "px";
+
+    clearTimeout(tooltipTimer);
+    tooltipTimer = setTimeout(function () {
+      tooltip.style.display = "none";
+    }, 2500);
+  }
+
+  function loadLabelSettings() {
+    var raw = localStorage.getItem(LABEL_SETTINGS_KEY);
+    if (!raw) {
+      return;
+    }
+    try {
+      var parsed = JSON.parse(raw);
+      if (typeof parsed.fontSize === "number") {
+        labelSettings.fontSize = parsed.fontSize;
+      }
+    } catch (e) {
+      // ignore malformed settings
+    }
+  }
+
+  function saveLabelSettings() {
+    localStorage.setItem(LABEL_SETTINGS_KEY, JSON.stringify(labelSettings));
+  }
+
+  function loadTitleSettings() {
+    var raw = localStorage.getItem(TITLE_SETTINGS_KEY);
+    if (!raw) {
+      return;
+    }
+    try {
+      var parsed = JSON.parse(raw);
+      if (parsed.mode === "time" || parsed.mode === "title" || parsed.mode === "both") {
+        titleSettings.mode = parsed.mode;
+      }
+      if (typeof parsed.title === "string") {
+        titleSettings.title = parsed.title;
+      }
+      if (typeof parsed.font === "string") {
+        titleSettings.font = parsed.font;
+      }
+      if (typeof parsed.titleFontSize === "number") {
+        titleSettings.titleFontSize = parsed.titleFontSize;
+      }
+      if (typeof parsed.timeFontSize === "number") {
+        titleSettings.timeFontSize = parsed.timeFontSize;
+      }
+    } catch (e) {
+      // ignore malformed settings
+    }
+  }
+
+  function saveTitleSettings() {
+    localStorage.setItem(TITLE_SETTINGS_KEY, JSON.stringify(titleSettings));
+  }
+
+  function applyTitleSettings() {
+    var container = document.getElementById("live-time-title");
+    container.classList.remove("mode-time", "mode-title", "mode-both");
+    container.classList.add("mode-" + titleSettings.mode);
+    document.getElementById("title-text-display").textContent = titleSettings.title || "새 계획표";
+    var clockPanel = document.querySelector(".clock-panel");
+    clockPanel.style.setProperty("--clock-font", titleSettings.font);
+    clockPanel.style.setProperty("--title-font-size", titleSettings.titleFontSize + "px");
+    clockPanel.style.setProperty("--time-font-size", titleSettings.timeFontSize + "px");
+  }
+
+  function loadClockStyle() {
+    var raw = localStorage.getItem(CLOCK_STYLE_KEY);
+    if (raw && CLOCK_STYLES[raw]) {
+      currentClockStyleKey = raw;
+    }
+  }
+
+  function saveClockStyle() {
+    localStorage.setItem(CLOCK_STYLE_KEY, currentClockStyleKey);
+  }
+
+  function applyTheme(theme) {
+    if (theme === "light" || theme === "dark") {
+      document.documentElement.setAttribute("data-theme", theme);
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+  }
+
+  function loadTheme() {
+    var raw = localStorage.getItem(THEME_KEY);
+    return raw === "light" || raw === "dark" ? raw : "system";
+  }
+
+  function saveTheme(theme) {
+    localStorage.setItem(THEME_KEY, theme);
+  }
+
+  function loadBandThickness() {
+    var raw = localStorage.getItem(BAND_THICKNESS_KEY);
+    if (!raw) {
+      return;
+    }
+    try {
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        clockThickness = parsed;
+      }
+    } catch (e) {
+      // ignore malformed settings
+    }
+  }
+
+  function saveBandThickness() {
+    localStorage.setItem(BAND_THICKNESS_KEY, JSON.stringify(clockThickness));
+  }
+
+  function applyClockStyle(key) {
+    var preset = CLOCK_STYLES[key] ? CLOCK_STYLES[key] : CLOCK_STYLES.donut;
+    currentClockStyleKey = CLOCK_STYLES[key] ? key : "donut";
+
+    var defaultThickness = preset.bandOuter - preset.bandInner;
+    if (typeof clockThickness[currentClockStyleKey] !== "number") {
+      clockThickness[currentClockStyleKey] = defaultThickness;
+    }
+    var thickness = Math.min(preset.bandOuter, Math.max(4, clockThickness[currentClockStyleKey]));
+    var effectiveBandInner = Math.max(0, preset.bandOuter - thickness);
+
+    RADIUS_MAJOR_OUTER = preset.tickMajorOuter;
+    RADIUS_MAJOR_INNER = preset.tickMajorInner;
+    RADIUS_MINOR_OUTER = preset.tickMinorOuter;
+    RADIUS_MINOR_INNER = preset.tickMinorInner;
+    RADIUS_LABEL = preset.hourLabelR;
+    BAND_OUTER_R = preset.bandOuter;
+    BAND_INNER_R = effectiveBandInner;
+    LABEL_RADIUS = thickness < 40 ? preset.bandOuter + 10 : (BAND_OUTER_R + BAND_INNER_R) / 2;
+    MARKER_RADIUS = LABEL_RADIUS + 20;
+    LABEL_MAX_LINES_OVERRIDE = preset.maxLinesOverride || null;
+
+    document.getElementById("clock-face-circle").setAttribute("r", preset.faceR);
+    document.getElementById("hand").setAttribute("y2", CY - preset.handLen);
+
+    var thicknessInput = document.getElementById("band-thickness");
+    var thicknessValue = document.getElementById("band-thickness-value");
+    if (thicknessInput) {
+      thicknessInput.max = preset.bandOuter;
+      thicknessInput.value = thickness;
+      thicknessValue.textContent = Math.round(thickness) + "px";
+    }
+
+    buildTicksAndLabels();
+    refreshAll();
+  }
+
+  function wrapLabelLines(title, angleSpanDeg, fontSize) {
+    var arcLen = (angleSpanDeg * Math.PI / 180) * LABEL_RADIUS;
+    var charWidth = fontSize * 0.85;
+    var maxChars = Math.max(2, Math.floor(arcLen / charWidth));
+    var bandWidth = BAND_OUTER_R - BAND_INNER_R;
+    var lineHeight = fontSize * 1.15;
+    var maxLines = LABEL_MAX_LINES_OVERRIDE || Math.min(4, Math.max(1, Math.floor(bandWidth / lineHeight)));
+
+    var words = title.split(/\s+/);
+    var lines = [];
+    var current = "";
+
+    words.forEach(function (word) {
+      var candidate = current ? current + " " + word : word;
+      if (candidate.length > maxChars && current) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = candidate;
+      }
+    });
+    if (current) {
+      lines.push(current);
+    }
+
+    if (lines.length > maxLines) {
+      lines = lines.slice(0, maxLines);
+      var last = lines[maxLines - 1];
+      lines[maxLines - 1] = last.length > 1 ? last.slice(0, Math.max(1, maxChars - 1)) + "…" : last;
+    }
+
+    return lines;
+  }
+
+  function attachRotateDrag(handleCircle, handleIcon, textEl, evt, pos, baseRotation) {
+    var svg = document.getElementById("clock-svg");
+    var pt = svg.createSVGPoint();
+    var dragging = false;
+    var startPointerAngle = 0;
+    var startLabelRotation = 0;
+
+    function toSvgPoint(clientX, clientY) {
+      pt.x = clientX;
+      pt.y = clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function angleFromPos(svgP) {
+      return Math.atan2(svgP.y - pos.y, svgP.x - pos.x) * 180 / Math.PI;
+    }
+
+    function applyRotation(rotation) {
+      var transform = "rotate(" + rotation + " " + pos.x + " " + pos.y + ")";
+      textEl.setAttribute("transform", transform);
+      handleCircle.setAttribute("transform", transform);
+      handleIcon.setAttribute("transform", transform);
+    }
+
+    handleCircle.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragging = true;
+      handleCircle.classList.add("active");
+      startPointerAngle = angleFromPos(toSvgPoint(e.clientX, e.clientY));
+      startLabelRotation = evt.labelRotation || 0;
+      handleCircle.setPointerCapture(e.pointerId);
+    });
+
+    handleCircle.addEventListener("pointermove", function (e) {
+      if (!dragging) {
+        return;
+      }
+      var currentAngle = angleFromPos(toSvgPoint(e.clientX, e.clientY));
+      var delta = currentAngle - startPointerAngle;
+      while (delta > 180) { delta -= 360; }
+      while (delta < -180) { delta += 360; }
+      evt.labelRotation = startLabelRotation + delta;
+      applyRotation(baseRotation + evt.labelRotation);
+    });
+
+    function endDrag(e) {
+      if (!dragging) {
+        return;
+      }
+      dragging = false;
+      handleCircle.classList.remove("active");
+      try {
+        handleCircle.releasePointerCapture(e.pointerId);
+      } catch (err) {
+        // pointer capture already released
+      }
+      saveEvents();
+    }
+
+    handleCircle.addEventListener("pointerup", endDrag);
+    handleCircle.addEventListener("pointercancel", endDrag);
+
+    handleCircle.addEventListener("dblclick", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      evt.labelRotation = 0;
+      applyRotation(baseRotation);
+      saveEvents();
+    });
+  }
+
+  function attachResizeDrag(handleCircle, textEl, evt) {
+    var svg = document.getElementById("clock-svg");
+    var pt = svg.createSVGPoint();
+    var dragging = false;
+    var startDist = 0;
+    var startFontSize = 0;
+
+    function toSvgPoint(clientX, clientY) {
+      pt.x = clientX;
+      pt.y = clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function distFromCenter(svgP) {
+      return Math.hypot(svgP.x - CX, svgP.y - CY);
+    }
+
+    handleCircle.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragging = true;
+      handleCircle.classList.add("active");
+      startDist = distFromCenter(toSvgPoint(e.clientX, e.clientY));
+      startFontSize = evt.labelFontSize || labelSettings.fontSize;
+      handleCircle.setPointerCapture(e.pointerId);
+    });
+
+    handleCircle.addEventListener("pointermove", function (e) {
+      if (!dragging) {
+        return;
+      }
+      var currentDist = distFromCenter(toSvgPoint(e.clientX, e.clientY));
+      var delta = (currentDist - startDist) * FONT_SIZE_DRAG_SENSITIVITY;
+      var newSize = Math.min(MAX_LABEL_FONT_SIZE, Math.max(MIN_LABEL_FONT_SIZE, startFontSize + delta));
+      evt.labelFontSize = newSize;
+      textEl.setAttribute("font-size", newSize);
+    });
+
+    function endDrag(e) {
+      if (!dragging) {
+        return;
+      }
+      dragging = false;
+      handleCircle.classList.remove("active");
+      try {
+        handleCircle.releasePointerCapture(e.pointerId);
+      } catch (err) {
+        // pointer capture already released
+      }
+      evt.labelFontSize = Math.round(evt.labelFontSize);
+      saveEvents();
+      renderEventBands();
+    }
+
+    handleCircle.addEventListener("pointerup", endDrag);
+    handleCircle.addEventListener("pointercancel", endDrag);
+
+    handleCircle.addEventListener("dblclick", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      evt.labelFontSize = null;
+      saveEvents();
+      renderEventBands();
+    });
+  }
+
+  function attachLabelMoveDrag(text, labelGroup, evt) {
+    var svg = document.getElementById("clock-svg");
+    var pt = svg.createSVGPoint();
+    var dragging = false;
+    var moved = false;
+    var startSvgX = 0, startSvgY = 0;
+    var startOffsetX = 0, startOffsetY = 0;
+
+    function toSvgPoint(clientX, clientY) {
+      pt.x = clientX;
+      pt.y = clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function applyOffset(x, y) {
+      labelGroup.setAttribute("transform", "translate(" + x + " " + y + ")");
+    }
+
+    text.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragging = true;
+      moved = false;
+      text.classList.add("dragging");
+      var svgP = toSvgPoint(e.clientX, e.clientY);
+      startSvgX = svgP.x;
+      startSvgY = svgP.y;
+      startOffsetX = evt.labelOffsetX || 0;
+      startOffsetY = evt.labelOffsetY || 0;
+      text.setPointerCapture(e.pointerId);
+    });
+
+    text.addEventListener("pointermove", function (e) {
+      if (!dragging) {
+        return;
+      }
+      var svgP = toSvgPoint(e.clientX, e.clientY);
+      var dx = svgP.x - startSvgX;
+      var dy = svgP.y - startSvgY;
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+        moved = true;
+      }
+      evt.labelOffsetX = startOffsetX + dx;
+      evt.labelOffsetY = startOffsetY + dy;
+      applyOffset(evt.labelOffsetX, evt.labelOffsetY);
+    });
+
+    function endDrag(e) {
+      if (!dragging) {
+        return;
+      }
+      dragging = false;
+      text.classList.remove("dragging");
+      try {
+        text.releasePointerCapture(e.pointerId);
+      } catch (err) {
+        // pointer capture already released
+      }
+      if (!moved) {
+        showSvgTooltip(e, evt.title + " (" + evt.startTime + " - " + evt.endTime + ")");
+      }
+      saveEvents();
+    }
+
+    text.addEventListener("pointerup", endDrag);
+    text.addEventListener("pointercancel", endDrag);
+
+    text.addEventListener("dblclick", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      evt.labelOffsetX = 0;
+      evt.labelOffsetY = 0;
+      applyOffset(0, 0);
+      saveEvents();
+    });
+  }
+
+  function buildEventLabelAndHandle(evt, startDeg, endDeg) {
+    var midDeg = (startDeg + endDeg) / 2;
+    var pos = pointOnCircle(CX, CY, LABEL_RADIUS, midDeg);
+    var normalizedMid = ((midDeg % 360) + 360) % 360;
+    var baseRotation = normalizedMid <= 180 ? normalizedMid - 90 : normalizedMid + 90;
+    var labelRotation = evt.labelRotation || 0;
+    var finalRotation = baseRotation + labelRotation;
+
+    var fontSize = evt.labelFontSize || labelSettings.fontSize;
+    var lines = wrapLabelLines(evt.title, endDeg - startDeg, fontSize);
+    var transform = "rotate(" + finalRotation + " " + pos.x + " " + pos.y + ")";
+
+    var group = svgEl("g", { class: "event-label-group" });
+
+    var text = svgEl("text", {
+      x: pos.x, y: pos.y,
+      class: "event-label",
+      "font-size": fontSize,
+      transform: transform
+    });
+
+    var startDy = -((lines.length - 1) / 2) * fontSize * 1.15;
+    lines.forEach(function (line, i) {
+      var tspan = svgEl("tspan", {
+        x: pos.x,
+        dy: i === 0 ? startDy : fontSize * 1.15
+      });
+      tspan.textContent = line;
+      text.appendChild(tspan);
+    });
+
+    var handleOffset = fontSize * 1.6 + 14;
+    var handleCircle = svgEl("circle", {
+      cx: pos.x + handleOffset, cy: pos.y,
+      r: HANDLE_RADIUS,
+      class: "rotate-handle-bg",
+      transform: transform
+    });
+    var handleIcon = svgEl("text", {
+      x: pos.x + handleOffset, y: pos.y,
+      class: "rotate-handle-icon",
+      transform: transform
+    });
+    handleIcon.textContent = "↻";
+
+    var resizeCircle = svgEl("circle", {
+      cx: pos.x - handleOffset, cy: pos.y,
+      r: HANDLE_RADIUS,
+      class: "resize-handle-bg",
+      transform: transform
+    });
+    var resizeIcon = svgEl("text", {
+      x: pos.x - handleOffset, y: pos.y,
+      class: "resize-handle-icon",
+      transform: transform
+    });
+    resizeIcon.textContent = "↕";
+
+    var deleteCircle = svgEl("circle", {
+      cx: pos.x, cy: pos.y - handleOffset,
+      r: HANDLE_RADIUS,
+      class: "delete-handle-bg",
+      transform: transform
+    });
+    var deleteIcon = svgEl("text", {
+      x: pos.x, y: pos.y - handleOffset,
+      class: "delete-handle-icon",
+      transform: transform
+    });
+    deleteIcon.textContent = "×";
+
+    group.appendChild(text);
+    group.appendChild(handleCircle);
+    group.appendChild(handleIcon);
+    group.appendChild(resizeCircle);
+    group.appendChild(resizeIcon);
+    group.appendChild(deleteCircle);
+    group.appendChild(deleteIcon);
+
+    var offsetX = evt.labelOffsetX || 0;
+    var offsetY = evt.labelOffsetY || 0;
+    group.setAttribute("transform", "translate(" + offsetX + " " + offsetY + ")");
+
+    attachRotateDrag(handleCircle, handleIcon, text, evt, pos, baseRotation);
+    attachResizeDrag(resizeCircle, text, evt);
+    attachLabelMoveDrag(text, group, evt);
+
+    deleteCircle.addEventListener("pointerdown", function (e) {
+      e.stopPropagation();
+    });
+    deleteCircle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      events = events.filter(function (other) { return other.id !== evt.id; });
+      saveEvents();
+      refreshAll();
+    });
+
+    return group;
+  }
+
+  function clearDragDraft() {
+    document.getElementById("drag-preview").innerHTML = "";
+  }
+
+  function initClockFaceDragCreate() {
+    var svg = document.getElementById("clock-svg");
+    var circle = document.getElementById("clock-face-circle");
+    var previewGroup = document.getElementById("drag-preview");
+    var pt = svg.createSVGPoint();
+    var dragging = false;
+    var startDeg = 0;
+
+    function toSvgPoint(clientX, clientY) {
+      pt.x = clientX;
+      pt.y = clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function drawLiveBand(deg1, deg2) {
+      previewGroup.innerHTML = "";
+      if (deg1 === deg2) {
+        return;
+      }
+      var d = describeArcBand(CX, CY, deg1, deg2, BAND_OUTER_R, BAND_INNER_R);
+      previewGroup.appendChild(svgEl("path", {
+        d: d,
+        class: "drag-preview-band",
+        fill: selectedColor,
+        "fill-opacity": "0.55",
+        stroke: "rgba(0,0,0,0.35)",
+        "stroke-width": "1.5",
+        "stroke-dasharray": "5 4"
+      }));
+    }
+
+    function drawDraft(startTime, endTime) {
+      previewGroup.innerHTML = "";
+      var deg1 = timeToDeg(startTime);
+      var deg2 = timeToDeg(endTime);
+      var d = describeArcBand(CX, CY, deg1, deg2, BAND_OUTER_R, BAND_INNER_R);
+      previewGroup.appendChild(svgEl("path", {
+        d: d,
+        class: "drag-preview-band",
+        fill: selectedColor,
+        "fill-opacity": "0.55",
+        stroke: "rgba(0,0,0,0.35)",
+        "stroke-width": "1.5",
+        "stroke-dasharray": "5 4"
+      }));
+
+      var midDeg = (deg1 + deg2) / 2;
+      var pos = pointOnCircle(CX, CY, BAND_OUTER_R + 14, midDeg);
+      var deleteGroup = svgEl("g", { class: "draft-delete" });
+      var deleteBg = svgEl("circle", {
+        cx: pos.x, cy: pos.y,
+        r: HANDLE_RADIUS,
+        class: "draft-delete-bg"
+      });
+      var deleteIcon = svgEl("text", {
+        x: pos.x, y: pos.y,
+        class: "draft-delete-icon"
+      });
+      deleteIcon.textContent = "×";
+
+      deleteGroup.appendChild(deleteBg);
+      deleteGroup.appendChild(deleteIcon);
+      deleteGroup.addEventListener("click", function (e) {
+        e.stopPropagation();
+        clearDragDraft();
+        document.getElementById("start-time").value = "";
+        document.getElementById("end-time").value = "";
+      });
+
+      previewGroup.appendChild(deleteGroup);
+    }
+
+    circle.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      clearDragDraft();
+      dragging = true;
+      startDeg = angleFromCenter(toSvgPoint(e.clientX, e.clientY));
+      circle.setPointerCapture(e.pointerId);
+    });
+
+    circle.addEventListener("pointermove", function (e) {
+      if (!dragging) {
+        return;
+      }
+      var currentDeg = angleFromCenter(toSvgPoint(e.clientX, e.clientY));
+      drawLiveBand(Math.min(startDeg, currentDeg), Math.max(startDeg, currentDeg));
+    });
+
+    function endDrag(e) {
+      if (!dragging) {
+        return;
+      }
+      dragging = false;
+      try {
+        circle.releasePointerCapture(e.pointerId);
+      } catch (err) {
+        // pointer capture already released
+      }
+
+      var endDeg = angleFromCenter(toSvgPoint(e.clientX, e.clientY));
+      var deg1 = Math.min(startDeg, endDeg);
+      var deg2 = Math.max(startDeg, endDeg);
+      var startTime = degToTimeStr(deg1, DRAG_CREATE_SNAP_MINUTES);
+      var endTime = degToTimeStr(deg2, DRAG_CREATE_SNAP_MINUTES);
+
+      if (startTime === endTime) {
+        clearDragDraft();
+        return;
+      }
+
+      drawDraft(startTime, endTime);
+      document.getElementById("start-time").value = startTime;
+      document.getElementById("end-time").value = endTime;
+      document.getElementById("task-title").focus();
+    }
+
+    circle.addEventListener("pointerup", endDrag);
+    circle.addEventListener("pointercancel", endDrag);
+  }
+
+  function renderEventBands() {
+    var group = document.getElementById("event-bands");
+    group.innerHTML = "";
+
+    events.forEach(function (evt) {
+      var startDeg = timeToDeg(evt.startTime);
+      var endDeg = timeToDeg(evt.endTime);
+      var d = describeArcBand(CX, CY, startDeg, endDeg, BAND_OUTER_R, BAND_INNER_R);
+      var tooltipText = evt.title + " (" + evt.startTime + " - " + evt.endTime + ")";
+
+      var path = svgEl("path", {
+        d: d,
+        fill: evt.color,
+        "fill-opacity": "0.85",
+        stroke: "rgba(0,0,0,0.15)",
+        "stroke-width": "1",
+        class: "event-band"
+      });
+
+      var titleEl = document.createElementNS(SVG_NS, "title");
+      titleEl.textContent = tooltipText;
+      path.appendChild(titleEl);
+
+      path.addEventListener("click", function (e) {
+        showSvgTooltip(e, tooltipText);
+      });
+
+      var evtGroup = svgEl("g", { class: "event-group" });
+      evtGroup.appendChild(path);
+      evtGroup.appendChild(buildEventLabelAndHandle(evt, startDeg, endDeg));
+      group.appendChild(evtGroup);
+    });
+  }
+
+  function renderAlarmMarkers() {
+    var group = document.getElementById("alarm-markers");
+    group.innerHTML = "";
+
+    events.forEach(function (evt) {
+      if (!evt.alarmEnabled) {
+        return;
+      }
+      var triggerTime = evt.alarmTriggerPoint === "end" ? evt.endTime : evt.startTime;
+      var deg = timeToDeg(triggerTime);
+      var pos = pointOnCircle(CX, CY, MARKER_RADIUS, deg);
+      var tooltipText = evt.title + " 알람 (" + triggerTime + ")";
+      var size = 18;
+
+      var marker = svgEl("use", {
+        href: "#star-icon",
+        x: pos.x - size / 2,
+        y: pos.y - size / 2,
+        width: size,
+        height: size,
+        class: "alarm-marker"
+      });
+      marker.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#star-icon");
+
+      var titleEl = document.createElementNS(SVG_NS, "title");
+      titleEl.textContent = tooltipText;
+      marker.appendChild(titleEl);
+
+      marker.addEventListener("click", function (e) {
+        showSvgTooltip(e, tooltipText);
+      });
+
+      group.appendChild(marker);
+    });
+  }
+
+  function refreshAll() {
+    renderEventList();
+    renderEventBands();
+    renderAlarmMarkers();
+  }
+
+  function updateClockHand() {
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    var s = now.getSeconds();
+    var totalSeconds = h * 3600 + m * 60 + s;
+    var deg = (totalSeconds / 86400) * 360;
+
+    document.getElementById("hand").style.transform = "rotate(" + deg + "deg)";
+    document.getElementById("time-text-display").textContent =
+      pad2(h) + ":" + pad2(m) + ":" + pad2(s);
+
+    refreshEventStatuses();
+    checkDateRollover();
+  }
+
+  function refreshEventStatuses() {
+    var now = new Date();
+    var nowHM = pad2(now.getHours()) + ":" + pad2(now.getMinutes());
+    var items = document.querySelectorAll("#event-list .event-item");
+
+    for (var i = 0; i < items.length; i++) {
+      var li = items[i];
+      var start = li.getAttribute("data-start");
+      var end = li.getAttribute("data-end");
+      if (!start || !end) {
+        continue;
+      }
+      li.classList.remove("event-past", "event-current");
+      if (end <= nowHM) {
+        li.classList.add("event-past");
+      } else if (start <= nowHM && nowHM < end) {
+        li.classList.add("event-current");
+      }
+    }
+  }
+
+  function checkDateRollover() {
+    var d = todayDateStr();
+    if (d !== currentDateStr) {
+      currentDateStr = d;
+      loadEvents();
+      refreshAll();
+    }
+  }
+
+  function todayDateStr() {
+    var d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+
+  function storageKey() {
+    return "roundClock_events_" + todayDateStr();
+  }
+
+  function loadEvents() {
+    var raw = localStorage.getItem(storageKey());
+    if (!raw) {
+      events = [];
+      return;
+    }
+    try {
+      var parsed = JSON.parse(raw);
+      events = Array.isArray(parsed.events) ? parsed.events : [];
+    } catch (e) {
+      events = [];
+    }
+  }
+
+  function saveEvents() {
+    var payload = {
+      date: todayDateStr(),
+      events: events
+    };
+    localStorage.setItem(storageKey(), JSON.stringify(payload));
+  }
+
+  function genId() {
+    return "evt_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+  }
+
+  function renderSwatches() {
+    var container = document.getElementById("swatches");
+    container.innerHTML = "";
+
+    PASTEL_COLORS.forEach(function (color) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "swatch" + (color === selectedColor ? " selected" : "");
+      btn.style.background = color;
+      btn.setAttribute("aria-label", color);
+      btn.addEventListener("click", function () {
+        selectedColor = color;
+        renderSwatches();
+      });
+      container.appendChild(btn);
+    });
+
+    var customWrap = document.createElement("label");
+    customWrap.className = "swatch-custom";
+    customWrap.title = "직접 선택";
+    var customInput = document.createElement("input");
+    customInput.type = "color";
+    customInput.value = selectedColor.length === 7 ? selectedColor : "#ffffff";
+    customInput.addEventListener("input", function (e) {
+      selectedColor = e.target.value;
+      renderSwatches();
+    });
+    customWrap.appendChild(customInput);
+    container.appendChild(customWrap);
+  }
+
+  function renderEventList() {
+    var list = document.getElementById("event-list");
+    list.innerHTML = "";
+
+    if (events.length === 0) {
+      var empty = document.createElement("li");
+      empty.className = "event-empty";
+      empty.textContent = "등록된 할 일이 없습니다.";
+      list.appendChild(empty);
+      return;
+    }
+
+    var sorted = events.slice().sort(function (a, b) {
+      return a.startTime.localeCompare(b.startTime);
+    });
+
+    var nowHM = pad2(new Date().getHours()) + ":" + pad2(new Date().getMinutes());
+
+    sorted.forEach(function (evt) {
+      var li = document.createElement("li");
+      li.className = "event-item";
+      li.setAttribute("data-start", evt.startTime);
+      li.setAttribute("data-end", evt.endTime);
+      if (evt.endTime <= nowHM) {
+        li.classList.add("event-past");
+      } else if (evt.startTime <= nowHM && nowHM < evt.endTime) {
+        li.classList.add("event-current");
+      }
+      if (evt.completed) {
+        li.classList.add("event-completed");
+      }
+
+      var completeCheckbox = document.createElement("input");
+      completeCheckbox.type = "checkbox";
+      completeCheckbox.className = "event-complete-checkbox";
+      completeCheckbox.checked = !!evt.completed;
+      completeCheckbox.setAttribute("aria-label", "완료 표시");
+      completeCheckbox.addEventListener("change", function () {
+        evt.completed = completeCheckbox.checked;
+        li.classList.toggle("event-completed", evt.completed);
+        saveEvents();
+      });
+      li.appendChild(completeCheckbox);
+
+      var dot = document.createElement("span");
+      dot.className = "event-color-dot";
+      dot.style.background = evt.color;
+
+      var time = document.createElement("span");
+      time.className = "event-time";
+      time.textContent = evt.startTime + " - " + evt.endTime;
+
+      var title = document.createElement("span");
+      title.className = "event-title";
+      title.textContent = evt.title;
+
+      li.appendChild(dot);
+      li.appendChild(time);
+      li.appendChild(title);
+
+      if (evt.alarmEnabled) {
+        var alarmFlag = document.createElement("span");
+        alarmFlag.className = "event-alarm-flag";
+        alarmFlag.textContent = "🔔 " + (evt.alarmTriggerPoint === "end" ? "종료" : "시작");
+        li.appendChild(alarmFlag);
+      }
+
+      var delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "event-delete";
+      delBtn.textContent = "삭제";
+      delBtn.addEventListener("click", function () {
+        events = events.filter(function (e) { return e.id !== evt.id; });
+        saveEvents();
+        refreshAll();
+      });
+
+      li.appendChild(delBtn);
+      list.appendChild(li);
+    });
+  }
+
+  function showError(msg) {
+    document.getElementById("error-msg").textContent = msg || "";
+  }
+
+  function handleFormSubmit(e) {
+    e.preventDefault();
+
+    var startTime = document.getElementById("start-time").value;
+    var endTime = document.getElementById("end-time").value;
+    var title = document.getElementById("task-title").value.trim();
+
+    if (!startTime || !endTime) {
+      showError("시작 시각과 종료 시각을 모두 입력해 주세요.");
+      return;
+    }
+    if (!title) {
+      showError("할 일 이름을 입력해 주세요.");
+      return;
+    }
+    if (startTime >= endTime) {
+      showError("종료 시각은 시작 시각보다 늦어야 합니다.");
+      return;
+    }
+
+    showError("");
+
+    var alarmEnabled = document.getElementById("alarm-enabled").checked;
+    var alarmTriggerPoint = document.getElementById("alarm-trigger-point").value;
+
+    events.push({
+      id: genId(),
+      startTime: startTime,
+      endTime: endTime,
+      title: title,
+      color: selectedColor,
+      alarmEnabled: alarmEnabled,
+      alarmTriggerPoint: alarmTriggerPoint,
+      alarmFiredToday: false,
+      completed: false,
+      labelRotation: 0,
+      labelFontSize: null,
+      labelOffsetX: 0,
+      labelOffsetY: 0
+    });
+
+    saveEvents();
+    refreshAll();
+    clearDragDraft();
+
+    document.getElementById("task-title").value = "";
+    document.getElementById("alarm-enabled").checked = false;
+    document.getElementById("alarm-trigger-point").disabled = true;
+    document.getElementById("alarm-trigger-point").value = "start";
+  }
+
+  function playBeep() {
+    try {
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      var ctx = new AudioCtx();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 880;
+      gain.gain.value = 0.2;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+      osc.stop(ctx.currentTime + 0.6);
+    } catch (e) {
+      // Web Audio unavailable — ignore, visual alarm still shows
+    }
+  }
+
+  function showToast(title, body) {
+    var container = document.getElementById("toast-container");
+    var toast = document.createElement("div");
+    toast.className = "toast";
+
+    var strong = document.createElement("strong");
+    strong.textContent = "🔔 " + title;
+    var div = document.createElement("div");
+    div.textContent = body;
+
+    toast.appendChild(strong);
+    toast.appendChild(div);
+    container.appendChild(toast);
+
+    setTimeout(function () {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 6000);
+  }
+
+  function fireAlarm(evt, triggerTime) {
+    var triggerLabel = evt.alarmTriggerPoint === "end" ? "종료" : "시작";
+    var body = evt.startTime + " - " + evt.endTime + " (" + triggerLabel + " 시각 알림)";
+
+    playBeep();
+
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      new Notification(evt.title, { body: body });
+    } else {
+      showToast(evt.title, body);
+    }
+  }
+
+  function checkAlarms() {
+    var now = new Date();
+    var nowHM = pad2(now.getHours()) + ":" + pad2(now.getMinutes());
+    var fired = false;
+
+    events.forEach(function (evt) {
+      if (!evt.alarmEnabled || evt.alarmFiredToday) {
+        return;
+      }
+      var triggerTime = evt.alarmTriggerPoint === "end" ? evt.endTime : evt.startTime;
+      if (triggerTime === nowHM) {
+        fireAlarm(evt, triggerTime);
+        evt.alarmFiredToday = true;
+        fired = true;
+      }
+    });
+
+    if (fired) {
+      saveEvents();
+      renderEventList();
+    }
+  }
+
+  function initNotificationBanner() {
+    if (typeof Notification === "undefined") {
+      return;
+    }
+    var banner = document.getElementById("notification-banner");
+
+    function refreshBanner() {
+      banner.hidden = Notification.permission !== "default";
+    }
+
+    refreshBanner();
+
+    document.getElementById("notif-allow-btn").addEventListener("click", function () {
+      Notification.requestPermission().then(refreshBanner);
+    });
+    document.getElementById("notif-dismiss-btn").addEventListener("click", function () {
+      banner.hidden = true;
+    });
+  }
+
+  function initLabelControls() {
+    var fontSizeInput = document.getElementById("label-font-size");
+    var fontSizeValue = document.getElementById("label-font-size-value");
+
+    fontSizeInput.value = labelSettings.fontSize;
+    fontSizeValue.textContent = labelSettings.fontSize + "px";
+
+    fontSizeInput.addEventListener("input", function (e) {
+      labelSettings.fontSize = parseInt(e.target.value, 10);
+      fontSizeValue.textContent = labelSettings.fontSize + "px";
+      saveLabelSettings();
+      renderEventBands();
+    });
+  }
+
+  function initTitleControls() {
+    var titleInput = document.getElementById("clock-title-input");
+    var modeRadios = document.querySelectorAll('input[name="title-mode"]');
+    var fontSelect = document.getElementById("clock-font-select");
+    var titleSizeInput = document.getElementById("title-font-size");
+    var titleSizeValue = document.getElementById("title-font-size-value");
+    var timeSizeInput = document.getElementById("time-font-size");
+    var timeSizeValue = document.getElementById("time-font-size-value");
+
+    titleInput.value = titleSettings.title;
+    modeRadios.forEach(function (radio) {
+      radio.checked = radio.value === titleSettings.mode;
+    });
+    fontSelect.value = titleSettings.font;
+    titleSizeInput.value = titleSettings.titleFontSize;
+    titleSizeValue.textContent = titleSettings.titleFontSize + "px";
+    timeSizeInput.value = titleSettings.timeFontSize;
+    timeSizeValue.textContent = titleSettings.timeFontSize + "px";
+
+    applyTitleSettings();
+
+    titleInput.addEventListener("input", function (e) {
+      titleSettings.title = e.target.value;
+      saveTitleSettings();
+      applyTitleSettings();
+    });
+
+    modeRadios.forEach(function (radio) {
+      radio.addEventListener("change", function (e) {
+        if (e.target.checked) {
+          titleSettings.mode = e.target.value;
+          saveTitleSettings();
+          applyTitleSettings();
+        }
+      });
+    });
+
+    fontSelect.addEventListener("change", function (e) {
+      titleSettings.font = e.target.value;
+      saveTitleSettings();
+      applyTitleSettings();
+    });
+
+    titleSizeInput.addEventListener("input", function (e) {
+      titleSettings.titleFontSize = parseInt(e.target.value, 10);
+      titleSizeValue.textContent = titleSettings.titleFontSize + "px";
+      saveTitleSettings();
+      applyTitleSettings();
+    });
+
+    timeSizeInput.addEventListener("input", function (e) {
+      titleSettings.timeFontSize = parseInt(e.target.value, 10);
+      timeSizeValue.textContent = titleSettings.timeFontSize + "px";
+      saveTitleSettings();
+      applyTitleSettings();
+    });
+  }
+
+  function initClockStyleControl() {
+    var select = document.getElementById("clock-style-select");
+    select.value = currentClockStyleKey;
+
+    select.addEventListener("change", function (e) {
+      applyClockStyle(e.target.value);
+      saveClockStyle();
+    });
+  }
+
+  function initThemeControl() {
+    var select = document.getElementById("theme-select");
+    var theme = loadTheme();
+    select.value = theme;
+    applyTheme(theme);
+
+    select.addEventListener("change", function (e) {
+      applyTheme(e.target.value);
+      saveTheme(e.target.value);
+    });
+  }
+
+  function initBandThicknessControl() {
+    var thicknessInput = document.getElementById("band-thickness");
+    var thicknessValue = document.getElementById("band-thickness-value");
+
+    thicknessInput.addEventListener("input", function (e) {
+      var value = parseInt(e.target.value, 10);
+      clockThickness[currentClockStyleKey] = value;
+      thicknessValue.textContent = value + "px";
+      saveBandThickness();
+      applyClockStyle(currentClockStyleKey);
+    });
+  }
+
+  function init() {
+    currentDateStr = todayDateStr();
+
+    loadLabelSettings();
+    loadTitleSettings();
+    loadClockStyle();
+    loadBandThickness();
+    renderSwatches();
+    loadEvents();
+    applyClockStyle(currentClockStyleKey);
+    initLabelControls();
+    initTitleControls();
+    initClockStyleControl();
+    initBandThicknessControl();
+    initThemeControl();
+    initClockFaceDragCreate();
+
+    document.getElementById("event-form").addEventListener("submit", handleFormSubmit);
+    document.getElementById("alarm-enabled").addEventListener("change", function (e) {
+      document.getElementById("alarm-trigger-point").disabled = !e.target.checked;
+    });
+
+    initNotificationBanner();
+
+    updateClockHand();
+    setInterval(updateClockHand, 1000);
+    setInterval(checkAlarms, ALARM_CHECK_INTERVAL_MS);
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+</body>
+</html>
