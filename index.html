@@ -797,11 +797,6 @@
   }
 
   .notice-banner {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 10001;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -816,6 +811,34 @@
 
   .notice-banner[hidden] {
     display: none;
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--border);
+  }
+
+  .site-nav a {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--ink-muted);
+  }
+
+  .site-nav a:hover {
+    background: var(--panel-bg);
+  }
+
+  .site-nav a.active {
+    background: var(--accent-bg);
+    color: var(--ink);
   }
 
   .notice-banner button {
@@ -894,6 +917,13 @@
   <button type="button" class="notice-allow-btn" id="notif-allow-btn">허용하기</button>
   <button type="button" class="notice-dismiss-btn" id="notif-dismiss-btn" aria-label="닫기">✕</button>
 </div>
+
+<nav class="site-nav">
+  <a href="round_clock.html" class="active">🕐 시계</a>
+  <a href="intro.html">ℹ️ 소개</a>
+  <a href="guide.html">📖 사용법</a>
+  <a href="examples.html">💡 예시</a>
+</nav>
 
 <div class="app">
   <div class="list-panel">

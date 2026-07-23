@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>둥근시계 위젯</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+    font-family: 'Gaegu', 'Nanum Pen Script', sans-serif;
+  }
+
+  #widget-wrap {
+    position: fixed;
+    top: 40px;
+    right: 40px;
+    width: 380px;
+    filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.28));
+  }
+
+  #clock-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .tick-major {
+    stroke: #6b5c45;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+
+  .tick-minor {
+    stroke: #b8a982;
+    stroke-width: 1.3;
+    stroke-linecap: round;
+  }
+
+  .tick-label {
+    font-size: 15px;
+    font-weight: 700;
+    fill: #4a3f2f;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-family: 'Gaegu', 'Nanum Pen Script', sans-serif;
+  }
+
+  .digital-time {
+    text-anchor: middle;
+    dominant-baseline: middle;
+    font-size: 22px;
+    font-weight: 700;
+    fill: #4a3f2f;
+    font-family: 'Gaegu', 'Nanum Pen Script', sans-serif;
+  }
+
+  #hand {
+    transform-origin: 200px 200px;
+    transition: transform 0.25s linear;
+  }
+</style>
+</head>
+<body>
+  <div id="widget-wrap">
+    <svg id="clock-svg" viewBox="-20 -20 440 440">
+      <defs>
+        <filter id="sketchy" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="-80" y="-80" width="560" height="560">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035 0.05" numOctaves="2" seed="7" result="noise"></feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+        </filter>
+        <symbol id="star-icon" viewBox="0 0 20 20">
+          <path d="M9.7 1.4 L12.2 7.5 L18.7 7.8 L13.5 12.0 L15.5 18.2 L9.8 14.5 L4.3 18.0 L6.3 11.6 L1.2 7.7 L7.7 7.2 Z"
+                fill="#f0ad4e" stroke="#8a5a20" stroke-width="0.9" stroke-linejoin="round"></path>
+        </symbol>
+      </defs>
+
+      <circle id="face-circle" cx="200" cy="200" r="150" fill="#fffdf8" fill-opacity="0.6" stroke="#ddd0b4" stroke-width="2.5" filter="url(#sketchy)"></circle>
+
+      <g id="event-bands"></g>
+
+      <g id="ticks-major" filter="url(#sketchy)"></g>
+      <g id="ticks-minor" filter="url(#sketchy)"></g>
+      <g id="tick-labels"></g>
+
+      <g id="alarm-markers"></g>
+
+      <g id="hand-group">
+        <line id="hand" x1="200" y1="200" x2="200" y2="70" stroke="#3a3530" stroke-width="3.2" stroke-linecap="round" filter="url(#sketchy)"></line>
+        <circle cx="200" cy="200" r="6" fill="#3a3530"></circle>
+      </g>
+
+      <text id="digital-time" class="digital-time" x="200" y="255">00:00:00</text>
+    </svg>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CX = 200, CY = 200;
+  var RADIUS_MAJOR_OUTER = 195;
+  var RADIUS_MAJOR_INNER = 175;
+  var RADIUS_MINOR_OUTER = 190;
+  var RADIUS_MINOR_INNER = 180;
+  var RADIUS_LABEL = 157;
+  var BAND_OUTER_R = 145;
+  var BAND_INNER_R = 95;
+  var MARKER_RADIUS = 208;
+  var SVG_NS = "http://www.w3.org/2000/svg";
+
+  var events = [];
+  var currentDateStr = "";
+
+  function pad2(n) {
+    return n < 10 ? "0" + n : String(n);
+  }
+
+  function pointOnCircle(cx, cy, r, clockDeg) {
+    var rad = (clockDeg * Math.PI) / 180;
+    return {
+      x: cx + r * Math.sin(rad),
+      y: cy - r * Math.cos(rad)
+    };
+  }
+
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS(SVG_NS, tag);
+    for (var key in attrs) {
+      el.setAttribute(key, attrs[key]);
+    }
+    return el;
+  }
+
+  function timeToDeg(hhmm) {
+    var parts = hhmm.split(":");
+    var hh = parseInt(parts[0], 10);
+    var mm = parseInt(parts[1], 10);
+    return (hh * 60 + mm) * 0.25;
+  }
+
+  function describeArcBand(cx, cy, startDeg, endDeg, outerR, innerR) {
+    var diff = endDeg - startDeg;
+    var largeArc = diff > 180 ? 1 : 0;
+    var outerStart = pointOnCircle(cx, cy, outerR, startDeg);
+    var outerEnd = pointOnCircle(cx, cy, outerR, endDeg);
+    var innerStart = pointOnCircle(cx, cy, innerR, startDeg);
+    var innerEnd = pointOnCircle(cx, cy, innerR, endDeg);
+
+    return [
+      "M", outerStart.x, outerStart.y,
+      "A", outerR, outerR, 0, largeArc, 1, outerEnd.x, outerEnd.y,
+      "L", innerEnd.x, innerEnd.y,
+      "A", innerR, innerR, 0, largeArc, 0, innerStart.x, innerStart.y,
+      "Z"
+    ].join(" ");
+  }
+
+  function buildTicksAndLabels() {
+    var majorGroup = document.getElementById("ticks-major");
+    var minorGroup = document.getElementById("ticks-minor");
+    var labelGroup = document.getElementById("tick-labels");
+
+    for (var hour = 0; hour < 24; hour++) {
+      var majorDeg = hour * 15;
+      var outer = pointOnCircle(CX, CY, RADIUS_MAJOR_OUTER, majorDeg);
+      var inner = pointOnCircle(CX, CY, RADIUS_MAJOR_INNER, majorDeg);
+      majorGroup.appendChild(svgEl("line", {
+        x1: outer.x, y1: outer.y, x2: inner.x, y2: inner.y,
+        class: "tick-major"
+      }));
+
+      var labelPos = pointOnCircle(CX, CY, RADIUS_LABEL, majorDeg);
+      var text = svgEl("text", {
+        x: labelPos.x, y: labelPos.y,
+        class: "tick-label"
+      });
+      text.textContent = String(hour);
+      labelGroup.appendChild(text);
+
+      for (var min = 10; min < 60; min += 10) {
+        var minorDeg = majorDeg + min * 0.25;
+        var mOuter = pointOnCircle(CX, CY, RADIUS_MINOR_OUTER, minorDeg);
+        var mInner = pointOnCircle(CX, CY, RADIUS_MINOR_INNER, minorDeg);
+        minorGroup.appendChild(svgEl("line", {
+          x1: mOuter.x, y1: mOuter.y, x2: mInner.x, y2: mInner.y,
+          class: "tick-minor"
+        }));
+      }
+    }
+  }
+
+  function renderEventBands() {
+    var group = document.getElementById("event-bands");
+    group.innerHTML = "";
+
+    events.forEach(function (evt) {
+      var startDeg = timeToDeg(evt.startTime);
+      var endDeg = timeToDeg(evt.endTime);
+      var d = describeArcBand(CX, CY, startDeg, endDeg, BAND_OUTER_R, BAND_INNER_R);
+
+      var path = svgEl("path", {
+        d: d,
+        fill: evt.color,
+        "fill-opacity": "0.8",
+        stroke: "rgba(0,0,0,0.15)",
+        "stroke-width": "1"
+      });
+
+      var titleEl = document.createElementNS(SVG_NS, "title");
+      titleEl.textContent = evt.title + " (" + evt.startTime + " - " + evt.endTime + ")";
+      path.appendChild(titleEl);
+
+      group.appendChild(path);
+    });
+  }
+
+  function renderAlarmMarkers() {
+    var group = document.getElementById("alarm-markers");
+    group.innerHTML = "";
+
+    events.forEach(function (evt) {
+      if (!evt.alarmEnabled) {
+        return;
+      }
+      var triggerTime = evt.alarmTriggerPoint === "end" ? evt.endTime : evt.startTime;
+      var deg = timeToDeg(triggerTime);
+      var pos = pointOnCircle(CX, CY, MARKER_RADIUS, deg);
+      var size = 18;
+
+      var marker = svgEl("use", {
+        href: "#star-icon",
+        x: pos.x - size / 2,
+        y: pos.y - size / 2,
+        width: size,
+        height: size
+      });
+      marker.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#star-icon");
+
+      var titleEl = document.createElementNS(SVG_NS, "title");
+      titleEl.textContent = evt.title + " 알람 (" + triggerTime + ")";
+      marker.appendChild(titleEl);
+
+      group.appendChild(marker);
+    });
+  }
+
+  function todayDateStr() {
+    var d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+
+  function storageKey() {
+    return "roundClock_events_" + todayDateStr();
+  }
+
+  function loadEvents() {
+    var raw = localStorage.getItem(storageKey());
+    if (!raw) {
+      events = [];
+      return;
+    }
+    try {
+      var parsed = JSON.parse(raw);
+      events = Array.isArray(parsed.events) ? parsed.events : [];
+    } catch (e) {
+      events = [];
+    }
+  }
+
+  function checkDateRollover() {
+    var d = todayDateStr();
+    if (d !== currentDateStr) {
+      currentDateStr = d;
+      loadEvents();
+      renderEventBands();
+      renderAlarmMarkers();
+    }
+  }
+
+  function updateClockHand() {
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    var s = now.getSeconds();
+    var totalSeconds = h * 3600 + m * 60 + s;
+    var deg = (totalSeconds / 86400) * 360;
+
+    document.getElementById("hand").style.transform = "rotate(" + deg + "deg)";
+    document.getElementById("digital-time").textContent =
+      pad2(h) + ":" + pad2(m) + ":" + pad2(s);
+
+    checkDateRollover();
+  }
+
+  window.livelyPropertyListener = function (name, val) {
+    if (name === "clockSize") {
+      document.getElementById("widget-wrap").style.width = val + "px";
+    } else if (name === "offsetTop") {
+      document.getElementById("widget-wrap").style.top = val + "px";
+    } else if (name === "offsetRight") {
+      document.getElementById("widget-wrap").style.right = val + "px";
+    } else if (name === "faceOpacity") {
+      document.getElementById("face-circle").setAttribute("fill-opacity", val / 100);
+    }
+  };
+
+  function init() {
+    currentDateStr = todayDateStr();
+    buildTicksAndLabels();
+    loadEvents();
+    renderEventBands();
+    renderAlarmMarkers();
+
+    updateClockHand();
+    setInterval(updateClockHand, 1000);
+    setInterval(function () {
+      loadEvents();
+      renderEventBands();
+      renderAlarmMarkers();
+    }, 30000);
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+</body>
+</html>

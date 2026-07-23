@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>예시 - 둥근 24시간 시간표</title>
+<script>
+(function () {
+  try {
+    var theme = localStorage.getItem("roundClock_theme");
+    if (theme === "light" || theme === "dark") {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  } catch (e) {
+    // localStorage unavailable — fall back to system preference
+  }
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="round_clock.html">🕐 시계</a>
+  <a href="intro.html">ℹ️ 소개</a>
+  <a href="guide.html">📖 사용법</a>
+  <a href="examples.html" class="active">💡 예시</a>
+</nav>
+
+<div class="page">
+  <h1>💡 이렇게 활용해보세요</h1>
+  <p class="tagline">누가, 어떤 하루를 시계 위에 올려두는지 세 가지 예시로 살펴봅니다. 시각과 색만 바꾸면 여러분의 하루에도 그대로 적용할 수 있어요.</p>
+
+  <div class="persona-grid">
+
+    <div class="persona-card">
+      <h3>📚 학생의 하루</h3>
+      <svg id="demo-student" aria-label="학생 시간표 예시"></svg>
+      <ul class="legend" id="legend-student"></ul>
+      <p style="font-size:14px; margin-top:10px;">
+        등교부터 자습, 숙제까지 이어지는 하루를 색으로 나누면, "오늘 공부에 시간을 얼마나 썼는지"가 한눈에 보입니다.
+        22시 이후 빈 시계판은 취침 시간이에요.
+      </p>
+    </div>
+
+    <div class="persona-card">
+      <h3>💼 직장인의 하루</h3>
+      <svg id="demo-worker" aria-label="직장인 시간표 예시"></svg>
+      <ul class="legend" id="legend-worker"></ul>
+      <p style="font-size:14px; margin-top:10px;">
+        업무·회의·점심·개인 시간을 구분해두면, 회의가 몰린 날인지 여유 있는 날인지 시계 모양만 봐도 알 수 있습니다.
+      </p>
+    </div>
+
+    <div class="persona-card">
+      <h3>🏃 운동 루틴</h3>
+      <svg id="demo-fitness" aria-label="운동 루틴 시간표 예시"></svg>
+      <ul class="legend" id="legend-fitness"></ul>
+      <p style="font-size:14px; margin-top:10px;">
+        아침 러닝과 저녁 근력 운동처럼 규칙적으로 반복하고 싶은 루틴을 색으로 고정해두면, 매일 같은 시간에 알람으로 챙길 수 있어요.
+      </p>
+    </div>
+
+  </div>
+
+  <h2>내 하루에 적용하려면</h2>
+  <ol class="steps">
+    <li>위 예시 중 비슷한 생활 패턴을 하나 고릅니다.</li>
+    <li><a href="round_clock.html">시계 페이지</a>를 열고, 예시의 시작·종료 시각과 이름을 그대로 입력해봅니다.</li>
+    <li>범주별로 같은 색을 반복해서 쓰면(예: 업무는 항상 파랑, 운동은 항상 빨강) 나중에 봤을 때 더 빠르게 읽힙니다.</li>
+    <li>자세한 입력 방법은 <a href="guide.html">사용법 페이지</a>를 참고하세요.</li>
+  </ol>
+
+  <div class="btn-row">
+    <a class="btn" href="round_clock.html">지금 만들어보기 →</a>
+    <a class="btn secondary" href="guide.html">사용법 보기</a>
+  </div>
+</div>
+
+<script src="demo-clock.js"></script>
+<script>
+function renderLegend(ulId, events) {
+  var ul = document.getElementById(ulId);
+  events.forEach(function (evt) {
+    var li = document.createElement("li");
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    dot.style.background = evt.color;
+    var label = document.createElement("span");
+    label.textContent = evt.start + "-" + evt.end + " " + evt.title;
+    li.appendChild(dot);
+    li.appendChild(label);
+    ul.appendChild(li);
+  });
+}
+
+var studentEvents = [
+  { start: "07:00", end: "08:00", title: "기상 · 등교 준비", color: "#F59E0B" },
+  { start: "08:00", end: "09:00", title: "등교", color: "#3B82F6" },
+  { start: "09:00", end: "15:00", title: "학교 수업", color: "#14B8A6" },
+  { start: "15:00", end: "17:00", title: "방과 후 자습", color: "#8B5CF6" },
+  { start: "17:00", end: "18:00", title: "저녁 식사", color: "#F97316" },
+  { start: "18:00", end: "20:00", title: "숙제", color: "#16A34A" },
+  { start: "20:00", end: "22:00", title: "자유 시간", color: "#EC4899" }
+];
+
+var workerEvents = [
+  { start: "07:00", end: "08:30", title: "출근 준비 · 이동", color: "#F59E0B" },
+  { start: "09:00", end: "12:00", title: "오전 업무", color: "#3B82F6" },
+  { start: "12:00", end: "13:00", title: "점심", color: "#F97316" },
+  { start: "13:00", end: "15:00", title: "회의", color: "#8B5CF6" },
+  { start: "15:00", end: "18:00", title: "오후 업무", color: "#14B8A6" },
+  { start: "18:30", end: "19:30", title: "저녁 식사", color: "#16A34A" },
+  { start: "19:30", end: "21:00", title: "운동", color: "#EF4444" },
+  { start: "21:00", end: "23:00", title: "개인 시간", color: "#EC4899" }
+];
+
+var fitnessEvents = [
+  { start: "06:00", end: "06:30", title: "기상 스트레칭", color: "#F59E0B" },
+  { start: "06:30", end: "07:30", title: "아침 러닝", color: "#EF4444" },
+  { start: "08:00", end: "09:00", title: "아침 식사", color: "#F97316" },
+  { start: "09:00", end: "17:00", title: "업무", color: "#3B82F6" },
+  { start: "18:00", end: "19:30", title: "근력 운동", color: "#8B5CF6" },
+  { start: "19:30", end: "20:00", title: "마무리 스트레칭", color: "#14B8A6" },
+  { start: "20:00", end: "21:00", title: "저녁 식사", color: "#16A34A" },
+  { start: "21:00", end: "22:00", title: "독서 · 휴식", color: "#EC4899" }
+];
+
+renderDemoClock(document.getElementById("demo-student"), studentEvents);
+renderLegend("legend-student", studentEvents);
+
+renderDemoClock(document.getElementById("demo-worker"), workerEvents);
+renderLegend("legend-worker", workerEvents);
+
+renderDemoClock(document.getElementById("demo-fitness"), fitnessEvents);
+renderLegend("legend-fitness", fitnessEvents);
+</script>
+</body>
+</html>

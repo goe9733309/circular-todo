@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>소개 - 둥근 24시간 시간표</title>
+<script>
+(function () {
+  try {
+    var theme = localStorage.getItem("roundClock_theme");
+    if (theme === "light" || theme === "dark") {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  } catch (e) {
+    // localStorage unavailable — fall back to system preference
+  }
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="round_clock.html">🕐 시계</a>
+  <a href="intro.html" class="active">ℹ️ 소개</a>
+  <a href="guide.html">📖 사용법</a>
+  <a href="examples.html">💡 예시</a>
+</nav>
+
+<div class="page">
+  <h1>🕐 둥근 24시간 시간표</h1>
+  <p class="tagline">하루 24시간을 원형 시계 위에 펼쳐놓고, 한눈에 오늘의 리듬을 보는 시간표입니다.</p>
+
+  <div class="hero-demo">
+    <svg id="hero-clock" aria-label="예시 시계 미리보기"></svg>
+  </div>
+
+  <div class="btn-row">
+    <a class="btn" href="round_clock.html">지금 사용해보기 →</a>
+    <a class="btn secondary" href="guide.html">사용법 보기</a>
+    <a class="btn secondary" href="examples.html">예시 보기</a>
+  </div>
+
+  <div class="card">
+    <p>
+      보통의 목록형 일정표는 하루가 얼마나 남았는지, 지금이 하루의 어느 지점인지 직관적으로 와닿지 않습니다.
+      이 시간표는 24시간을 하나의 원으로 표현해서, 등교·업무·운동·휴식 같은 하루의 일정이
+      시계 위에 색깔 있는 밴드로 나란히 놓이고, 지금 이 순간을 가리키는 시침이 그 위를 지나갑니다.
+    </p>
+  </div>
+
+  <h2>주요 기능</h2>
+  <div class="feature-grid">
+    <div class="card">
+      <div class="icon">🖱️</div>
+      <h3>드래그로 빠르게 추가</h3>
+      <p>시계판의 빈 곳을 드래그하면 시작·종료 시각이 10분 단위로 자동 입력됩니다.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🎨</div>
+      <h3>10가지 색상 팔레트</h3>
+      <p>일정마다 뚜렷하게 구분되는 색을 골라, 한눈에 하루의 구성을 파악할 수 있습니다.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🌗</div>
+      <h3>다크모드 지원</h3>
+      <p>시스템 설정을 따르거나, 라이트/다크를 직접 선택할 수 있습니다.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🔔</div>
+      <h3>알람 &amp; 브라우저 알림</h3>
+      <p>일정 시작 또는 종료 시각에 소리와 알림으로 알려줍니다.</p>
+    </div>
+    <div class="card">
+      <div class="icon">🖊️</div>
+      <h3>자유로운 커스터마이징</h3>
+      <p>시계판 모양(도넛·얇은 밴드·파이·아웃라인), 글꼴, 라벨 위치·회전·크기까지 조절합니다.</p>
+    </div>
+    <div class="card">
+      <div class="icon">💾</div>
+      <h3>간편한 삭제</h3>
+      <p>목록에서, 또는 시계 위 일정에 마우스를 올려 바로 삭제할 수 있습니다.</p>
+    </div>
+  </div>
+
+  <div class="tip">
+    💡 모든 일정은 이 브라우저에만 저장되며, 매일 자정이 지나면 새로 시작됩니다. 서버에 전송되지 않아요.
+  </div>
+
+  <div class="btn-row">
+    <a class="btn" href="round_clock.html">지금 사용해보기 →</a>
+  </div>
+</div>
+
+<script src="demo-clock.js"></script>
+<script>
+renderDemoClock(document.getElementById("hero-clock"), [
+  { start: "07:00", end: "09:00", title: "기상 · 준비", color: "#F59E0B" },
+  { start: "09:00", end: "12:00", title: "오전 업무", color: "#3B82F6" },
+  { start: "12:00", end: "13:00", title: "점심", color: "#F97316" },
+  { start: "13:00", end: "18:00", title: "오후 업무", color: "#14B8A6" },
+  { start: "19:00", end: "20:30", title: "운동", color: "#EF4444" },
+  { start: "21:00", end: "23:00", title: "휴식", color: "#8B5CF6" }
+]);
+</script>
+</body>
+</html>
