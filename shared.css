@@ -385,6 +385,34 @@ kbd, .key {
   border-top: 1px solid var(--border);
 }
 
+.site-footer {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-faint);
+}
+
+.site-footer a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.site-footer .footer-links {
+  margin-bottom: 8px;
+}
+
+.site-footer .footer-links a + a {
+  margin-left: 14px;
+}
+
 .demo-face {
   fill: var(--clock-face-fill);
   stroke: var(--clock-face-stroke);

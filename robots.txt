@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://goe9733309.github.io/circular-todo/sitemap.xml
