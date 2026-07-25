@@ -3,8 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>둥근 24시간 시간표</title>
-<meta name="description" content="하루 24시간을 원형 시계 위에 색깔 있는 밴드로 펼쳐서 보여주는 무료 온라인 시간표. 드래그로 일정을 추가하고, 알람과 다크모드를 지원합니다.">
+<title data-i18n="app.pageTitle">둥근 24시간 시간표</title>
+<meta name="description" data-i18n-content="app.description" content="하루 24시간을 원형 시계 위에 색깔 있는 밴드로 펼쳐서 보여주는 무료 온라인 시간표. 드래그로 일정을 추가하고, 알람과 다크모드를 지원합니다.">
+<script src="i18n.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4418116063043264"
      crossorigin="anonymous"></script>
 <script>
@@ -906,6 +909,77 @@
     color: var(--bg);
   }
 
+  .site-nav-lang {
+    padding: 7px 16px;
+    border-radius: 980px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    border: none;
+    background: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background 0.25s var(--ease), color 0.25s var(--ease);
+  }
+
+  .site-nav-lang:hover {
+    color: var(--ink);
+    background: var(--border-soft);
+  }
+
+  .export-menu-wrap {
+    position: relative;
+  }
+
+  .export-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    padding: 6px;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    box-shadow: 0 6px 18px var(--shadow-soft);
+    z-index: 50;
+  }
+
+  .export-menu.hidden {
+    display: none;
+  }
+
+  .export-menu button {
+    padding: 8px 12px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    text-align: left;
+    border: none;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .export-menu button:hover {
+    background: var(--border-soft);
+  }
+
+  .export-menu-disabled {
+    color: var(--ink-faint) !important;
+    cursor: not-allowed !important;
+  }
+
+  .export-menu-disabled:hover {
+    background: none !important;
+  }
+
   .notice-banner button {
     font-family: inherit;
     font-size: 14px;
@@ -979,21 +1053,30 @@
 </head>
 <body>
 <div class="notice-banner" id="notification-banner" hidden>
-  <span>🔔 알람을 받으려면 알림을 허용해주세요</span>
-  <button type="button" class="notice-allow-btn" id="notif-allow-btn">허용하기</button>
-  <button type="button" class="notice-dismiss-btn" id="notif-dismiss-btn" aria-label="닫기">✕</button>
+  <span data-i18n="app.notifBannerText">🔔 알람을 받으려면 알림을 허용해주세요</span>
+  <button type="button" class="notice-allow-btn" id="notif-allow-btn" data-i18n="app.notifAllow">허용하기</button>
+  <button type="button" class="notice-dismiss-btn" id="notif-dismiss-btn" aria-label="닫기" data-i18n-aria-label="app.notifClose">✕</button>
 </div>
 
 <nav class="site-nav">
-  <a href="index.html" class="active">🕐 시계</a>
-  <a href="intro.html">ℹ️ 소개</a>
-  <a href="guide.html">📖 사용법</a>
-  <a href="examples.html">💡 예시</a>
+  <a href="index.html" class="active" data-i18n="nav.clock">🕐 시계</a>
+  <a href="intro.html" data-i18n="nav.intro">ℹ️ 소개</a>
+  <a href="guide.html" data-i18n="nav.guide">📖 사용법</a>
+  <a href="examples.html" data-i18n="nav.examples">💡 예시</a>
+  <div class="export-menu-wrap">
+    <button type="button" class="site-nav-lang" id="export-toggle" data-i18n="nav.export">⬇️ 내보내기</button>
+    <div class="export-menu hidden" id="export-menu">
+      <button type="button" id="export-image" data-i18n="nav.exportImage">🖼️ 이미지로 저장</button>
+      <button type="button" id="export-pdf" data-i18n="nav.exportPdf">📄 PDF로 저장</button>
+      <button type="button" class="export-menu-disabled" id="export-widget" data-i18n="nav.exportWidget">🖥️ Windows 위젯 (작업 예정)</button>
+    </div>
+  </div>
+  <button type="button" class="site-nav-lang" id="lang-toggle"></button>
 </nav>
 
 <div class="app">
   <div class="list-panel">
-    <h2>오늘의 할 일 목록</h2>
+    <h2 data-i18n="app.todoListHeading">오늘의 할 일 목록</h2>
     <div class="card card-list">
       <ul class="event-list" id="event-list"></ul>
     </div>
@@ -1035,120 +1118,120 @@
 
   <div class="side-panel">
     <details class="card card-settings">
-      <summary>표시 설정</summary>
+      <summary data-i18n="app.displaySettings">표시 설정</summary>
       <div class="details-body">
         <div class="row-2">
           <div class="field">
-            <label for="theme-select">화면 테마</label>
+            <label for="theme-select" data-i18n="app.themeLabel">화면 테마</label>
             <select id="theme-select">
-              <option value="system">시스템 설정 따르기</option>
-              <option value="light">라이트</option>
-              <option value="dark">다크</option>
+              <option value="system" data-i18n="app.themeSystem">시스템 설정 따르기</option>
+              <option value="light" data-i18n="app.themeLight">라이트</option>
+              <option value="dark" data-i18n="app.themeDark">다크</option>
             </select>
           </div>
         </div>
         <div class="row-2">
           <div class="field">
-            <label for="clock-style-select">시계판 모양</label>
+            <label for="clock-style-select" data-i18n="app.clockStyleLabel">시계판 모양</label>
             <select id="clock-style-select">
-              <option value="donut">도넛형 (기본)</option>
-              <option value="thinBand">얇은 밴드형</option>
-              <option value="pie">파이형</option>
-              <option value="outline">아웃라인형</option>
+              <option value="donut" data-i18n="app.styleDonut">도넛형 (기본)</option>
+              <option value="thinBand" data-i18n="app.styleThin">얇은 밴드형</option>
+              <option value="pie" data-i18n="app.stylePie">파이형</option>
+              <option value="outline" data-i18n="app.styleOutline">아웃라인형</option>
             </select>
           </div>
           <div class="field">
-            <label for="clock-font-select">시계 글자 폰트</label>
+            <label for="clock-font-select" data-i18n="app.fontLabel">시계 글자 폰트</label>
             <select id="clock-font-select">
-              <option value="'Noto Sans KR', sans-serif">고딕 - Noto Sans KR</option>
-              <option value="'Nanum Gothic', sans-serif">고딕 - Nanum Gothic</option>
-              <option value="'Gowun Dodum', sans-serif">고운 고딕 - Gowun Dodum</option>
-              <option value="'Jua', sans-serif">둥근 고딕 - Jua</option>
-              <option value="'Black Han Sans', sans-serif">임팩트 고딕 - Black Han Sans</option>
-              <option value="'Gowun Batang', serif">바탕체 - Gowun Batang</option>
-              <option value="'Nanum Myeongjo', serif">명조체 - Nanum Myeongjo</option>
-              <option value="'Gaegu', 'Nanum Pen Script', sans-serif">손글씨 - Gaegu</option>
-              <option value="'Nanum Pen Script', cursive">손글씨 - Nanum Pen Script</option>
-              <option value="'Single Day', cursive">손글씨 - Single Day</option>
-              <option value="'Nanum Brush Script', cursive">붓글씨 - Nanum Brush Script</option>
-              <option value="'Hi Melody', cursive">손글씨 - Hi Melody</option>
+              <option value="'Noto Sans KR', sans-serif" data-i18n="app.fontNotoSans">고딕 - Noto Sans KR</option>
+              <option value="'Nanum Gothic', sans-serif" data-i18n="app.fontNanumGothic">고딕 - Nanum Gothic</option>
+              <option value="'Gowun Dodum', sans-serif" data-i18n="app.fontGowunDodum">고운 고딕 - Gowun Dodum</option>
+              <option value="'Jua', sans-serif" data-i18n="app.fontJua">둥근 고딕 - Jua</option>
+              <option value="'Black Han Sans', sans-serif" data-i18n="app.fontBlackHan">임팩트 고딕 - Black Han Sans</option>
+              <option value="'Gowun Batang', serif" data-i18n="app.fontGowunBatang">바탕체 - Gowun Batang</option>
+              <option value="'Nanum Myeongjo', serif" data-i18n="app.fontNanumMyeongjo">명조체 - Nanum Myeongjo</option>
+              <option value="'Gaegu', 'Nanum Pen Script', sans-serif" data-i18n="app.fontGaegu">손글씨 - Gaegu</option>
+              <option value="'Nanum Pen Script', cursive" data-i18n="app.fontNanumPen">손글씨 - Nanum Pen Script</option>
+              <option value="'Single Day', cursive" data-i18n="app.fontSingleDay">손글씨 - Single Day</option>
+              <option value="'Nanum Brush Script', cursive" data-i18n="app.fontNanumBrush">붓글씨 - Nanum Brush Script</option>
+              <option value="'Hi Melody', cursive" data-i18n="app.fontHiMelody">손글씨 - Hi Melody</option>
             </select>
           </div>
         </div>
         <div class="row-2">
           <div class="field">
-            <label for="clock-title-input">시계 제목</label>
-            <input type="text" id="clock-title-input" placeholder="예: 새 계획표">
+            <label for="clock-title-input" data-i18n="app.titleInputLabel">시계 제목</label>
+            <input type="text" id="clock-title-input" placeholder="예: 새 계획표" data-i18n-placeholder="app.titleInputPlaceholder">
           </div>
           <div class="field">
-            <label>상단에 표시</label>
+            <label data-i18n="app.showTopLabel">상단에 표시</label>
             <div class="radio-group">
-              <label><input type="radio" name="title-mode" value="time"> 시간</label>
-              <label><input type="radio" name="title-mode" value="title"> 제목</label>
-              <label><input type="radio" name="title-mode" value="both"> 둘다</label>
+              <label><input type="radio" name="title-mode" value="time"> <span data-i18n="app.showTime">시간</span></label>
+              <label><input type="radio" name="title-mode" value="title"> <span data-i18n="app.showTitle">제목</span></label>
+              <label><input type="radio" name="title-mode" value="both"> <span data-i18n="app.showBoth">둘다</span></label>
             </div>
           </div>
         </div>
         <div class="row-2">
           <div class="range-field">
-            <label for="band-thickness"><span>밴드 두께</span><span id="band-thickness-value">93px</span></label>
+            <label for="band-thickness"><span data-i18n="app.bandThickness">밴드 두께</span><span id="band-thickness-value">93px</span></label>
             <input type="range" id="band-thickness" min="8" max="188" step="1" value="93">
           </div>
           <div class="range-field">
-            <label for="label-font-size"><span>할 일 글자</span><span id="label-font-size-value">14px</span></label>
+            <label for="label-font-size"><span data-i18n="app.labelFontSize">할 일 글자</span><span id="label-font-size-value">14px</span></label>
             <input type="range" id="label-font-size" min="9" max="24" step="1" value="14">
           </div>
         </div>
         <div class="row-2">
           <div class="range-field">
-            <label for="title-font-size"><span>제목 크기</span><span id="title-font-size-value">22px</span></label>
+            <label for="title-font-size"><span data-i18n="app.titleFontSize">제목 크기</span><span id="title-font-size-value">22px</span></label>
             <input type="range" id="title-font-size" min="12" max="48" step="1" value="22">
           </div>
           <div class="range-field">
-            <label for="time-font-size"><span>시간 크기</span><span id="time-font-size-value">40px</span></label>
+            <label for="time-font-size"><span data-i18n="app.timeFontSize">시간 크기</span><span id="time-font-size-value">40px</span></label>
             <input type="range" id="time-font-size" min="20" max="72" step="1" value="40">
           </div>
         </div>
-        <div class="hint-text">라벨을 드래그해 위치 이동, 손잡이(↻회전 · ↕크기) 조절, 더블클릭 리셋.</div>
+        <div class="hint-text" data-i18n="app.hintText">라벨을 드래그해 위치 이동, 손잡이(↻회전 · ↕크기) 조절, 더블클릭 리셋.</div>
       </div>
     </details>
 
-    <h2>시간 설정</h2>
+    <h2 data-i18n="app.scheduleHeading">시간 설정</h2>
     <div class="card card-form">
       <form id="event-form">
         <div class="row-2">
           <div class="field">
-            <label for="start-time">시작 시각</label>
+            <label for="start-time" data-i18n="app.startTimeLabel">시작 시각</label>
             <input type="time" id="start-time" required>
           </div>
           <div class="field">
-            <label for="end-time">종료 시각</label>
+            <label for="end-time" data-i18n="app.endTimeLabel">종료 시각</label>
             <input type="time" id="end-time" required>
           </div>
         </div>
 
         <div class="field">
-          <label for="task-title">할 일</label>
-          <input type="text" id="task-title" placeholder="예: 운동" required>
+          <label for="task-title" data-i18n="app.taskLabel">할 일</label>
+          <input type="text" id="task-title" placeholder="예: 운동" required data-i18n-placeholder="app.taskPlaceholder">
         </div>
 
         <div class="field">
-          <label>색상</label>
+          <label data-i18n="app.colorLabel">색상</label>
           <div class="swatches" id="swatches"></div>
         </div>
 
         <div class="field checkbox-field">
           <label class="checkbox-label">
             <input type="checkbox" id="alarm-enabled">
-            알람 설정
+            <span data-i18n="app.alarmLabel">알람 설정</span>
           </label>
           <select id="alarm-trigger-point" disabled>
-            <option value="start">시작 시각에 울림</option>
-            <option value="end">종료 시각에 울림</option>
+            <option value="start" data-i18n="app.alarmAtStart">시작 시각에 울림</option>
+            <option value="end" data-i18n="app.alarmAtEnd">종료 시각에 울림</option>
           </select>
         </div>
 
-        <button type="submit" class="btn-add">추가</button>
+        <button type="submit" class="btn-add" data-i18n="app.addBtn">추가</button>
         <div class="error-msg" id="error-msg"></div>
       </form>
     </div>
@@ -1157,10 +1240,10 @@
 
 <footer class="site-footer">
   <div class="footer-links">
-    <a href="privacy.html">개인정보처리방침</a>
-    <a href="mailto:goe9733309@gmail.com">문의하기</a>
+    <a href="privacy.html" data-i18n="footer.privacy">개인정보처리방침</a>
+    <a href="mailto:goe9733309@gmail.com" data-i18n="footer.contact">문의하기</a>
   </div>
-  <p>&copy; 2026 둥근 24시간 시간표</p>
+  <p data-i18n="footer.copyright">&copy; 2026 둥근 24시간 시간표</p>
 </footer>
 
 <div class="toast-container" id="toast-container"></div>
@@ -1192,6 +1275,7 @@
   var TITLE_SETTINGS_KEY = "roundClock_titleSettings";
   var CLOCK_STYLE_KEY = "roundClock_clockStyle";
   var THEME_KEY = "roundClock_theme";
+  var EXAMPLE_SEEDED_KEY = "roundClock_exampleSeeded";
 
   var CLOCK_STYLES = {
     donut: {
@@ -1256,11 +1340,15 @@
   var labelSettings = { fontSize: 14 };
   var titleSettings = {
     mode: "time",
-    title: "새 계획표",
+    titleByLang: { ko: "", en: "" },
     font: "'Noto Sans KR', sans-serif",
     titleFontSize: 22,
     timeFontSize: 40
   };
+
+  function t(key, vars) {
+    return window.RoundClockI18n ? window.RoundClockI18n.t(key, vars) : key;
+  }
 
   function pad2(n) {
     return n < 10 ? "0" + n : String(n);
@@ -1405,8 +1493,17 @@
       if (parsed.mode === "time" || parsed.mode === "title" || parsed.mode === "both") {
         titleSettings.mode = parsed.mode;
       }
-      if (typeof parsed.title === "string") {
-        titleSettings.title = parsed.title;
+      if (parsed.titleByLang && typeof parsed.titleByLang === "object") {
+        if (typeof parsed.titleByLang.ko === "string") {
+          titleSettings.titleByLang.ko = parsed.titleByLang.ko;
+        }
+        if (typeof parsed.titleByLang.en === "string") {
+          titleSettings.titleByLang.en = parsed.titleByLang.en;
+        }
+      } else if (typeof parsed.title === "string") {
+        // migrate from the old single-language title field
+        titleSettings.titleByLang.ko = parsed.title;
+        titleSettings.titleByLang.en = parsed.title;
       }
       if (typeof parsed.font === "string") {
         titleSettings.font = parsed.font;
@@ -1430,7 +1527,8 @@
     var container = document.getElementById("live-time-title");
     container.classList.remove("mode-time", "mode-title", "mode-both");
     container.classList.add("mode-" + titleSettings.mode);
-    document.getElementById("title-text-display").textContent = titleSettings.title || "새 계획표";
+    var currentLang = window.RoundClockI18n ? window.RoundClockI18n.getLang() : "ko";
+    document.getElementById("title-text-display").textContent = titleSettings.titleByLang[currentLang] || t("app.defaultTitle");
     var clockPanel = document.querySelector(".clock-panel");
     clockPanel.style.setProperty("--clock-font", titleSettings.font);
     clockPanel.style.setProperty("--title-font-size", titleSettings.titleFontSize + "px");
@@ -2151,6 +2249,50 @@
     return "evt_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
   }
 
+  function seedExampleEventsIfFirstVisit() {
+    if (localStorage.getItem(EXAMPLE_SEEDED_KEY)) {
+      return;
+    }
+    localStorage.setItem(EXAMPLE_SEEDED_KEY, "1");
+
+    if (events.length > 0) {
+      return;
+    }
+
+    events.push({
+      id: genId(),
+      startTime: "07:00",
+      endTime: "07:30",
+      title: t("app.exampleWakeUp"),
+      color: "#F59E0B",
+      alarmEnabled: false,
+      alarmTriggerPoint: "start",
+      alarmFiredToday: false,
+      completed: false,
+      labelRotation: 0,
+      labelFontSize: null,
+      labelOffsetX: 0,
+      labelOffsetY: 0
+    });
+    events.push({
+      id: genId(),
+      startTime: "07:30",
+      endTime: "08:30",
+      title: t("app.exampleMorningExercise"),
+      color: "#EF4444",
+      alarmEnabled: false,
+      alarmTriggerPoint: "start",
+      alarmFiredToday: false,
+      completed: false,
+      labelRotation: 0,
+      labelFontSize: null,
+      labelOffsetX: 0,
+      labelOffsetY: 0
+    });
+
+    saveEvents();
+  }
+
   function renderSwatches() {
     var container = document.getElementById("swatches");
     container.innerHTML = "";
@@ -2170,7 +2312,7 @@
 
     var customWrap = document.createElement("label");
     customWrap.className = "swatch-custom";
-    customWrap.title = "직접 선택";
+    customWrap.title = t("app.customColorTitle");
     var customInput = document.createElement("input");
     customInput.type = "color";
     customInput.value = selectedColor.length === 7 ? selectedColor : "#ffffff";
@@ -2189,7 +2331,7 @@
     if (events.length === 0) {
       var empty = document.createElement("li");
       empty.className = "event-empty";
-      empty.textContent = "등록된 할 일이 없습니다.";
+      empty.textContent = t("app.emptyList");
       list.appendChild(empty);
       return;
     }
@@ -2218,7 +2360,7 @@
       completeCheckbox.type = "checkbox";
       completeCheckbox.className = "event-complete-checkbox";
       completeCheckbox.checked = !!evt.completed;
-      completeCheckbox.setAttribute("aria-label", "완료 표시");
+      completeCheckbox.setAttribute("aria-label", t("app.completeAria"));
       completeCheckbox.addEventListener("change", function () {
         evt.completed = completeCheckbox.checked;
         li.classList.toggle("event-completed", evt.completed);
@@ -2245,14 +2387,14 @@
       if (evt.alarmEnabled) {
         var alarmFlag = document.createElement("span");
         alarmFlag.className = "event-alarm-flag";
-        alarmFlag.textContent = "🔔 " + (evt.alarmTriggerPoint === "end" ? "종료" : "시작");
+        alarmFlag.textContent = "🔔 " + (evt.alarmTriggerPoint === "end" ? t("app.alarmFlagEnd") : t("app.alarmFlagStart"));
         li.appendChild(alarmFlag);
       }
 
       var delBtn = document.createElement("button");
       delBtn.type = "button";
       delBtn.className = "event-delete";
-      delBtn.textContent = "삭제";
+      delBtn.textContent = t("app.deleteBtn");
       delBtn.addEventListener("click", function () {
         events = events.filter(function (e) { return e.id !== evt.id; });
         saveEvents();
@@ -2276,15 +2418,15 @@
     var title = document.getElementById("task-title").value.trim();
 
     if (!startTime || !endTime) {
-      showError("시작 시각과 종료 시각을 모두 입력해 주세요.");
+      showError(t("app.errorNeedTimes"));
       return;
     }
     if (!title) {
-      showError("할 일 이름을 입력해 주세요.");
+      showError(t("app.errorNeedTitle"));
       return;
     }
     if (startTime >= endTime) {
-      showError("종료 시각은 시작 시각보다 늦어야 합니다.");
+      showError(t("app.errorEndBeforeStart"));
       return;
     }
 
@@ -2338,13 +2480,13 @@
     }
   }
 
-  function showToast(title, body) {
+  function showToast(title, body, icon) {
     var container = document.getElementById("toast-container");
     var toast = document.createElement("div");
     toast.className = "toast";
 
     var strong = document.createElement("strong");
-    strong.textContent = "🔔 " + title;
+    strong.textContent = (icon || "🔔") + " " + title;
     var div = document.createElement("div");
     div.textContent = body;
 
@@ -2359,9 +2501,120 @@
     }, 6000);
   }
 
+  function exportFileBaseName() {
+    var titleText = document.getElementById("title-text-display").textContent.trim();
+    var safe = (titleText || "round-clock").replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "-");
+    return safe + "_" + todayDateStr();
+  }
+
+  function captureClockPanel() {
+    var panel = document.querySelector(".clock-panel");
+    var svg = document.getElementById("clock-svg");
+    var titleEl = document.getElementById("live-time-title");
+    var prevDisplay = titleEl.style.display;
+    var scale = 2;
+
+    titleEl.style.display = "none";
+
+    return html2canvas(panel, { backgroundColor: null, scale: scale, useCORS: true }).then(
+      function (fullCanvas) {
+        var panelRect = panel.getBoundingClientRect();
+        var svgRect = svg.getBoundingClientRect();
+        titleEl.style.display = prevDisplay;
+
+        var cropX = (svgRect.left - panelRect.left) * scale;
+        var cropY = (svgRect.top - panelRect.top) * scale;
+        var cropW = svgRect.width * scale;
+        var cropH = svgRect.height * scale;
+
+        var cropped = document.createElement("canvas");
+        cropped.width = cropW;
+        cropped.height = cropH;
+        cropped.getContext("2d").drawImage(fullCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+        return cropped;
+      },
+      function (err) {
+        titleEl.style.display = prevDisplay;
+        throw err;
+      }
+    );
+  }
+
+  function downloadBlob(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function exportAsImage() {
+    if (typeof html2canvas === "undefined") {
+      showToast(t("app.exportErrorTitle"), t("app.exportErrorToast"), "⚠️");
+      return;
+    }
+    captureClockPanel().then(function (canvas) {
+      canvas.toBlob(function (blob) {
+        downloadBlob(blob, exportFileBaseName() + ".png");
+      }, "image/png");
+    }).catch(function () {
+      showToast(t("app.exportErrorTitle"), t("app.exportErrorToast"), "⚠️");
+    });
+  }
+
+  function exportAsPdf() {
+    if (typeof html2canvas === "undefined" || typeof window.jspdf === "undefined") {
+      showToast(t("app.exportErrorTitle"), t("app.exportErrorToast"), "⚠️");
+      return;
+    }
+    captureClockPanel().then(function (canvas) {
+      var jsPDF = window.jspdf.jsPDF;
+      var orientation = canvas.width >= canvas.height ? "landscape" : "portrait";
+      var pdf = new jsPDF({ orientation: orientation, unit: "px", format: [canvas.width, canvas.height] });
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
+      pdf.save(exportFileBaseName() + ".pdf");
+    }).catch(function () {
+      showToast(t("app.exportErrorTitle"), t("app.exportErrorToast"), "⚠️");
+    });
+  }
+
+  function initExportMenu() {
+    var toggle = document.getElementById("export-toggle");
+    var menu = document.getElementById("export-menu");
+
+    toggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      menu.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!menu.classList.contains("hidden") && !menu.contains(e.target) && e.target !== toggle) {
+        menu.classList.add("hidden");
+      }
+    });
+
+    document.getElementById("export-image").addEventListener("click", function () {
+      menu.classList.add("hidden");
+      exportAsImage();
+    });
+
+    document.getElementById("export-pdf").addEventListener("click", function () {
+      menu.classList.add("hidden");
+      exportAsPdf();
+    });
+
+    document.getElementById("export-widget").addEventListener("click", function () {
+      menu.classList.add("hidden");
+      showToast(t("app.comingSoonTitle"), t("app.comingSoonBody"), "🛠️");
+    });
+  }
+
   function fireAlarm(evt, triggerTime) {
-    var triggerLabel = evt.alarmTriggerPoint === "end" ? "종료" : "시작";
-    var body = evt.startTime + " - " + evt.endTime + " (" + triggerLabel + " 시각 알림)";
+    var triggerLabel = evt.alarmTriggerPoint === "end" ? t("app.alarmFlagEnd") : t("app.alarmFlagStart");
+    var body = t("app.alarmBody", { start: evt.startTime, end: evt.endTime, trigger: triggerLabel });
 
     playBeep();
 
@@ -2439,7 +2692,7 @@
     var timeSizeInput = document.getElementById("time-font-size");
     var timeSizeValue = document.getElementById("time-font-size-value");
 
-    titleInput.value = titleSettings.title;
+    titleInput.value = titleSettings.titleByLang[window.RoundClockI18n ? window.RoundClockI18n.getLang() : "ko"];
     modeRadios.forEach(function (radio) {
       radio.checked = radio.value === titleSettings.mode;
     });
@@ -2451,8 +2704,13 @@
 
     applyTitleSettings();
 
+    window.addEventListener("roundclock:langchange", function () {
+      titleInput.value = titleSettings.titleByLang[window.RoundClockI18n.getLang()];
+    });
+
     titleInput.addEventListener("input", function (e) {
-      titleSettings.title = e.target.value;
+      var currentLang = window.RoundClockI18n ? window.RoundClockI18n.getLang() : "ko";
+      titleSettings.titleByLang[currentLang] = e.target.value;
       saveTitleSettings();
       applyTitleSettings();
     });
@@ -2532,6 +2790,7 @@
     loadBandThickness();
     renderSwatches();
     loadEvents();
+    seedExampleEventsIfFirstVisit();
     applyClockStyle(currentClockStyleKey);
     initLabelControls();
     initTitleControls();
@@ -2546,10 +2805,16 @@
     });
 
     initNotificationBanner();
+    initExportMenu();
 
     updateClockHand();
     setInterval(updateClockHand, 1000);
     setInterval(checkAlarms, ALARM_CHECK_INTERVAL_MS);
+
+    window.addEventListener("roundclock:langchange", function () {
+      applyTitleSettings();
+      refreshAll();
+    });
   }
 
   document.addEventListener("DOMContentLoaded", init);

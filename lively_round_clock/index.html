@@ -5,9 +5,40 @@
 <title>둥근시계 위젯</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
+
+  :root {
+    --tick-major: #1d1d1f;
+    --tick-minor: rgba(0, 0, 0, 0.22);
+    --tick-label: #1d1d1f;
+    --hand-color: #1d1d1f;
+    --face-fill: #ffffff;
+    --face-stroke: rgba(0, 0, 0, 0.12);
+    --modal-bg: rgba(255, 255, 255, 0.92);
+    --modal-border: rgba(0, 0, 0, 0.1);
+    --modal-ink: #1d1d1f;
+    --modal-input-bg: #ffffff;
+    --modal-input-border: rgba(0, 0, 0, 0.16);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --tick-major: #f5f5f7;
+      --tick-minor: rgba(255, 255, 255, 0.25);
+      --tick-label: #f5f5f7;
+      --hand-color: #f5f5f7;
+      --face-fill: #1c1c1e;
+      --face-stroke: rgba(255, 255, 255, 0.14);
+      --modal-bg: rgba(28, 28, 30, 0.92);
+      --modal-border: rgba(255, 255, 255, 0.12);
+      --modal-ink: #f5f5f7;
+      --modal-input-bg: #2c2c2e;
+      --modal-input-border: rgba(255, 255, 255, 0.2);
+    }
+  }
+
   html, body {
     margin: 0;
     padding: 0;
@@ -15,7 +46,7 @@
     height: 100%;
     background: transparent;
     overflow: hidden;
-    font-family: 'Gaegu', 'Nanum Pen Script', sans-serif;
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
   #widget-wrap {
@@ -23,7 +54,7 @@
     top: 40px;
     right: 40px;
     width: 380px;
-    filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.28));
+    filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.25));
   }
 
   #clock-svg {
@@ -32,14 +63,24 @@
     display: block;
   }
 
+  #face-circle {
+    fill: var(--face-fill);
+    stroke: var(--face-stroke);
+    stroke-width: 2;
+  }
+
+  #event-bands path {
+    cursor: pointer;
+  }
+
   .tick-major {
-    stroke: #6b5c45;
+    stroke: var(--tick-major);
     stroke-width: 2.2;
     stroke-linecap: round;
   }
 
   .tick-minor {
-    stroke: #b8a982;
+    stroke: var(--tick-minor);
     stroke-width: 1.3;
     stroke-linecap: round;
   }
@@ -47,58 +88,214 @@
   .tick-label {
     font-size: 15px;
     font-weight: 700;
-    fill: #4a3f2f;
+    fill: var(--tick-label);
     text-anchor: middle;
     dominant-baseline: middle;
-    font-family: 'Gaegu', 'Nanum Pen Script', sans-serif;
+    font-family: 'Noto Sans KR', sans-serif;
   }
 
   .digital-time {
     text-anchor: middle;
     dominant-baseline: middle;
-    font-size: 22px;
-    font-weight: 700;
-    fill: #4a3f2f;
-    font-family: 'Gaegu', 'Nanum Pen Script', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    fill: var(--tick-label);
+    font-variant-numeric: tabular-nums;
+    font-family: 'Noto Sans KR', sans-serif;
   }
 
   #hand {
+    stroke: var(--hand-color);
     transform-origin: 200px 200px;
     transition: transform 0.25s linear;
+  }
+
+  .hand-center {
+    fill: var(--hand-color);
+  }
+
+  .event-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .event-modal.hidden {
+    display: none;
+  }
+
+  .event-modal-box {
+    width: 240px;
+    background: var(--modal-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--modal-border);
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+    padding: 16px 18px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--modal-ink);
+  }
+
+  .event-modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .event-modal-box label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .event-modal-box input[type="text"],
+  .event-modal-box input[type="time"],
+  .event-modal-box select {
+    width: 100%;
+    margin-top: 3px;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 4px 6px;
+    border: 1.5px solid var(--modal-input-border);
+    border-radius: 6px;
+    background: var(--modal-input-bg);
+    color: var(--modal-ink);
+    box-sizing: border-box;
+  }
+
+  .evt-alarm-row {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .evt-alarm-row input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+  }
+
+  .evt-color-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .evt-color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+  }
+
+  .evt-color-swatch.selected {
+    border-color: var(--modal-ink);
+  }
+
+  .event-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .evt-btn {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 8px;
+    border: 1.5px solid var(--modal-input-border);
+    background: var(--modal-input-bg);
+    color: var(--modal-ink);
+    cursor: pointer;
+  }
+
+  .evt-btn-primary {
+    background: #0071e3;
+    color: #ffffff;
+    border-color: #0071e3;
+  }
+
+  .evt-btn-danger {
+    margin-right: auto;
+    border-color: #ff453a;
+    color: #ff453a;
+  }
+
+  .hidden {
+    display: none !important;
   }
 </style>
 </head>
 <body>
   <div id="widget-wrap">
-    <svg id="clock-svg" viewBox="-20 -20 440 440">
+    <svg id="clock-svg" viewBox="-80 -80 560 560">
       <defs>
-        <filter id="sketchy" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" x="-80" y="-80" width="560" height="560">
-          <feTurbulence type="fractalNoise" baseFrequency="0.035 0.05" numOctaves="2" seed="7" result="noise"></feTurbulence>
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
-        </filter>
         <symbol id="star-icon" viewBox="0 0 20 20">
-          <path d="M9.7 1.4 L12.2 7.5 L18.7 7.8 L13.5 12.0 L15.5 18.2 L9.8 14.5 L4.3 18.0 L6.3 11.6 L1.2 7.7 L7.7 7.2 Z"
-                fill="#f0ad4e" stroke="#8a5a20" stroke-width="0.9" stroke-linejoin="round"></path>
+          <path d="M10 1.2 L12.35 7.2 L18.8 7.64 L13.85 11.76 L15.51 18 L10 14.4 L4.49 18 L6.15 11.76 L1.2 7.64 L7.65 7.2 Z"
+                fill="#f0ad4e" stroke="#8a5a20" stroke-width="0.8" stroke-linejoin="round"></path>
         </symbol>
       </defs>
 
-      <circle id="face-circle" cx="200" cy="200" r="150" fill="#fffdf8" fill-opacity="0.6" stroke="#ddd0b4" stroke-width="2.5" filter="url(#sketchy)"></circle>
+      <circle id="face-circle" cx="200" cy="200" r="192" fill-opacity="0.6"></circle>
 
       <g id="event-bands"></g>
 
-      <g id="ticks-major" filter="url(#sketchy)"></g>
-      <g id="ticks-minor" filter="url(#sketchy)"></g>
+      <g id="ticks-major"></g>
+      <g id="ticks-minor"></g>
       <g id="tick-labels"></g>
 
       <g id="alarm-markers"></g>
 
       <g id="hand-group">
-        <line id="hand" x1="200" y1="200" x2="200" y2="70" stroke="#3a3530" stroke-width="3.2" stroke-linecap="round" filter="url(#sketchy)"></line>
-        <circle cx="200" cy="200" r="6" fill="#3a3530"></circle>
+        <line id="hand" x1="200" y1="200" x2="200" y2="150" stroke-width="3" stroke-linecap="round"></line>
+        <circle class="hand-center" cx="200" cy="200" r="6"></circle>
       </g>
 
-      <text id="digital-time" class="digital-time" x="200" y="255">00:00:00</text>
+      <text id="digital-time" class="digital-time" x="200" y="235">00:00:00</text>
     </svg>
+  </div>
+
+  <div id="event-modal" class="event-modal hidden">
+    <div class="event-modal-box">
+      <div class="event-modal-title" id="evt-modal-title">일정 추가</div>
+      <label>제목
+        <input type="text" id="evt-title" maxlength="20" placeholder="예: 회의">
+      </label>
+      <label>시작
+        <input type="time" id="evt-start">
+      </label>
+      <label>종료
+        <input type="time" id="evt-end">
+      </label>
+      <div class="evt-color-row" id="evt-color-row"></div>
+      <label class="evt-alarm-row">
+        <input type="checkbox" id="evt-alarm">
+        알람 울리기
+      </label>
+      <label>
+        <select id="evt-alarm-point" disabled>
+          <option value="start">시작 시</option>
+          <option value="end">종료 시</option>
+        </select>
+      </label>
+      <div id="evt-error" style="color:#ff453a; font-size:12px; min-height:16px;"></div>
+      <div class="event-modal-actions">
+        <button type="button" id="evt-delete" class="evt-btn evt-btn-danger hidden">삭제</button>
+        <button type="button" id="evt-cancel" class="evt-btn">취소</button>
+        <button type="button" id="evt-save" class="evt-btn evt-btn-primary">저장</button>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -106,21 +303,32 @@
   "use strict";
 
   var CX = 200, CY = 200;
-  var RADIUS_MAJOR_OUTER = 195;
-  var RADIUS_MAJOR_INNER = 175;
-  var RADIUS_MINOR_OUTER = 190;
-  var RADIUS_MINOR_INNER = 180;
-  var RADIUS_LABEL = 157;
-  var BAND_OUTER_R = 145;
+  var RADIUS_MAJOR_OUTER = 95;
+  var RADIUS_MAJOR_INNER = 76;
+  var RADIUS_MINOR_OUTER = 95;
+  var RADIUS_MINOR_INNER = 87;
+  var RADIUS_LABEL = 58;
+  var BAND_OUTER_R = 188;
   var BAND_INNER_R = 95;
   var MARKER_RADIUS = 208;
   var SVG_NS = "http://www.w3.org/2000/svg";
 
   var events = [];
   var currentDateStr = "";
+  var editingEventId = null;
+  var selectedColor = "";
+
+  var COLOR_PALETTE = [
+    "#EF4444", "#14B8A6", "#F97316", "#3B82F6", "#F59E0B",
+    "#8B5CF6", "#16A34A", "#EC4899", "#84CC16", "#A16207"
+  ];
 
   function pad2(n) {
     return n < 10 ? "0" + n : String(n);
+  }
+
+  function genId() {
+    return "e" + Date.now() + Math.random().toString(36).slice(2, 8);
   }
 
   function pointOnCircle(cx, cy, r, clockDeg) {
@@ -177,13 +385,15 @@
         class: "tick-major"
       }));
 
-      var labelPos = pointOnCircle(CX, CY, RADIUS_LABEL, majorDeg);
-      var text = svgEl("text", {
-        x: labelPos.x, y: labelPos.y,
-        class: "tick-label"
-      });
-      text.textContent = String(hour);
-      labelGroup.appendChild(text);
+      if (hour % 6 === 0) {
+        var labelPos = pointOnCircle(CX, CY, RADIUS_LABEL, majorDeg);
+        var text = svgEl("text", {
+          x: labelPos.x, y: labelPos.y,
+          class: "tick-label"
+        });
+        text.textContent = String(hour);
+        labelGroup.appendChild(text);
+      }
 
       for (var min = 10; min < 60; min += 10) {
         var minorDeg = majorDeg + min * 0.25;
@@ -209,9 +419,10 @@
       var path = svgEl("path", {
         d: d,
         fill: evt.color,
-        "fill-opacity": "0.8",
+        "fill-opacity": "0.85",
         stroke: "rgba(0,0,0,0.15)",
-        "stroke-width": "1"
+        "stroke-width": "1",
+        "data-event-id": evt.id
       });
 
       var titleEl = document.createElementNS(SVG_NS, "title");
@@ -275,6 +486,16 @@
     }
   }
 
+  function persistEvents() {
+    var payload = {
+      date: todayDateStr(),
+      events: events
+    };
+    localStorage.setItem(storageKey(), JSON.stringify(payload));
+    renderEventBands();
+    renderAlarmMarkers();
+  }
+
   function checkDateRollover() {
     var d = todayDateStr();
     if (d !== currentDateStr) {
@@ -300,6 +521,180 @@
     checkDateRollover();
   }
 
+  function pointToClockTime(clientX, clientY) {
+    var svg = document.getElementById("clock-svg");
+    var rect = svg.getBoundingClientRect();
+    var scale = 560 / rect.width;
+    var localX = (clientX - rect.left) * scale - 80;
+    var localY = (clientY - rect.top) * scale - 80;
+    var dx = localX - CX;
+    var dy = localY - CY;
+    var deg = (Math.atan2(dx, -dy) * 180) / Math.PI;
+    if (deg < 0) {
+      deg += 360;
+    }
+    var minutes = Math.round((deg * 4) / 10) * 10;
+    if (minutes >= 1440) {
+      minutes = 0;
+    }
+    var startMinutes = minutes;
+    var endMinutes = Math.min(startMinutes + 60, 23 * 60 + 59);
+    return {
+      startTime: pad2(Math.floor(startMinutes / 60)) + ":" + pad2(startMinutes % 60),
+      endTime: pad2(Math.floor(endMinutes / 60)) + ":" + pad2(endMinutes % 60)
+    };
+  }
+
+  function buildColorSwatches() {
+    var row = document.getElementById("evt-color-row");
+    row.innerHTML = "";
+    COLOR_PALETTE.forEach(function (color) {
+      var swatch = document.createElement("div");
+      swatch.className = "evt-color-swatch";
+      swatch.style.background = color;
+      swatch.dataset.color = color;
+      swatch.addEventListener("click", function () {
+        selectColor(color);
+      });
+      row.appendChild(swatch);
+    });
+  }
+
+  function selectColor(color) {
+    selectedColor = color;
+    var swatches = document.querySelectorAll("#evt-color-row .evt-color-swatch");
+    swatches.forEach(function (swatch) {
+      swatch.classList.toggle("selected", swatch.dataset.color === color);
+    });
+  }
+
+  function showModalError(msg) {
+    document.getElementById("evt-error").textContent = msg || "";
+  }
+
+  function openAddModal(startTime, endTime) {
+    editingEventId = null;
+    document.getElementById("evt-modal-title").textContent = "일정 추가";
+    document.getElementById("evt-title").value = "";
+    document.getElementById("evt-start").value = startTime;
+    document.getElementById("evt-end").value = endTime;
+    document.getElementById("evt-alarm").checked = false;
+    document.getElementById("evt-alarm-point").disabled = true;
+    document.getElementById("evt-alarm-point").value = "start";
+    document.getElementById("evt-delete").classList.add("hidden");
+    showModalError("");
+    selectColor(COLOR_PALETTE[0]);
+    document.getElementById("event-modal").classList.remove("hidden");
+    document.getElementById("evt-title").focus();
+  }
+
+  function openEditModal(evt) {
+    editingEventId = evt.id;
+    document.getElementById("evt-modal-title").textContent = "일정 수정";
+    document.getElementById("evt-title").value = evt.title;
+    document.getElementById("evt-start").value = evt.startTime;
+    document.getElementById("evt-end").value = evt.endTime;
+    document.getElementById("evt-alarm").checked = !!evt.alarmEnabled;
+    document.getElementById("evt-alarm-point").disabled = !evt.alarmEnabled;
+    document.getElementById("evt-alarm-point").value = evt.alarmTriggerPoint || "start";
+    document.getElementById("evt-delete").classList.remove("hidden");
+    showModalError("");
+    selectColor(evt.color);
+    document.getElementById("event-modal").classList.remove("hidden");
+  }
+
+  function closeModal() {
+    editingEventId = null;
+    document.getElementById("event-modal").classList.add("hidden");
+  }
+
+  function handleSave() {
+    var title = document.getElementById("evt-title").value.trim();
+    var startTime = document.getElementById("evt-start").value;
+    var endTime = document.getElementById("evt-end").value;
+    var alarmEnabled = document.getElementById("evt-alarm").checked;
+    var alarmTriggerPoint = document.getElementById("evt-alarm-point").value;
+
+    if (!title) {
+      showModalError("제목을 입력해 주세요.");
+      return;
+    }
+    if (!startTime || !endTime) {
+      showModalError("시작/종료 시각을 입력해 주세요.");
+      return;
+    }
+    if (startTime >= endTime) {
+      showModalError("종료 시각은 시작 시각보다 늦어야 합니다.");
+      return;
+    }
+
+    if (editingEventId) {
+      var existing = events.filter(function (e) { return e.id === editingEventId; })[0];
+      if (existing) {
+        existing.title = title;
+        existing.startTime = startTime;
+        existing.endTime = endTime;
+        existing.color = selectedColor;
+        existing.alarmEnabled = alarmEnabled;
+        existing.alarmTriggerPoint = alarmTriggerPoint;
+      }
+    } else {
+      events.push({
+        id: genId(),
+        startTime: startTime,
+        endTime: endTime,
+        title: title,
+        color: selectedColor,
+        alarmEnabled: alarmEnabled,
+        alarmTriggerPoint: alarmTriggerPoint,
+        alarmFiredToday: false,
+        completed: false
+      });
+    }
+
+    persistEvents();
+    closeModal();
+  }
+
+  function handleDelete() {
+    if (!editingEventId) {
+      return;
+    }
+    events = events.filter(function (e) { return e.id !== editingEventId; });
+    persistEvents();
+    closeModal();
+  }
+
+  function handleSvgDblClick(e) {
+    var target = e.target.closest ? e.target.closest("[data-event-id]") : null;
+    if (target) {
+      var evtId = target.getAttribute("data-event-id");
+      var evt = events.filter(function (ev) { return ev.id === evtId; })[0];
+      if (evt) {
+        openEditModal(evt);
+        return;
+      }
+    }
+    var time = pointToClockTime(e.clientX, e.clientY);
+    openAddModal(time.startTime, time.endTime);
+  }
+
+  function setupEventModal() {
+    buildColorSwatches();
+    document.getElementById("clock-svg").addEventListener("dblclick", handleSvgDblClick);
+    document.getElementById("evt-save").addEventListener("click", handleSave);
+    document.getElementById("evt-cancel").addEventListener("click", closeModal);
+    document.getElementById("evt-delete").addEventListener("click", handleDelete);
+    document.getElementById("evt-alarm").addEventListener("change", function (e) {
+      document.getElementById("evt-alarm-point").disabled = !e.target.checked;
+    });
+    document.getElementById("event-modal").addEventListener("click", function (e) {
+      if (e.target.id === "event-modal") {
+        closeModal();
+      }
+    });
+  }
+
   window.livelyPropertyListener = function (name, val) {
     if (name === "clockSize") {
       document.getElementById("widget-wrap").style.width = val + "px";
@@ -318,6 +713,7 @@
     loadEvents();
     renderEventBands();
     renderAlarmMarkers();
+    setupEventModal();
 
     updateClockHand();
     setInterval(updateClockHand, 1000);

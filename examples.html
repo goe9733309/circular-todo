@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>예시 - 둥근 24시간 시간표</title>
-<meta name="description" content="학생, 직장인, 운동 루틴 등 세 가지 예시로 둥근 24시간 시간표를 하루 일과에 활용하는 방법을 보여줍니다.">
+<title data-i18n="examples.pageTitle">예시 - 둥근 24시간 시간표</title>
+<meta name="description" data-i18n-content="examples.description" content="학생, 직장인, 운동 루틴 등 세 가지 예시로 둥근 24시간 시간표를 하루 일과에 활용하는 방법을 보여줍니다.">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4418116063043264"
      crossorigin="anonymous"></script>
 <script>
@@ -24,63 +24,65 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="shared.css">
+<script src="i18n.js"></script>
 </head>
 <body>
 
 <nav class="site-nav">
-  <a href="index.html">🕐 시계</a>
-  <a href="intro.html">ℹ️ 소개</a>
-  <a href="guide.html">📖 사용법</a>
-  <a href="examples.html" class="active">💡 예시</a>
+  <a href="index.html" data-i18n="nav.clock">🕐 시계</a>
+  <a href="intro.html" data-i18n="nav.intro">ℹ️ 소개</a>
+  <a href="guide.html" data-i18n="nav.guide">📖 사용법</a>
+  <a href="examples.html" class="active" data-i18n="nav.examples">💡 예시</a>
+  <button type="button" class="site-nav-lang" id="lang-toggle"></button>
 </nav>
 
 <div class="page">
-  <h1>💡 이렇게 활용해보세요</h1>
-  <p class="tagline">누가, 어떤 하루를 시계 위에 올려두는지 세 가지 예시로 살펴봅니다. 시각과 색만 바꾸면 여러분의 하루에도 그대로 적용할 수 있어요.</p>
+  <h1 data-i18n="examples.h1">💡 이렇게 활용해보세요</h1>
+  <p class="tagline" data-i18n="examples.tagline">누가, 어떤 하루를 시계 위에 올려두는지 세 가지 예시로 살펴봅니다. 시각과 색만 바꾸면 여러분의 하루에도 그대로 적용할 수 있어요.</p>
 
   <div class="persona-grid">
 
     <div class="persona-card">
-      <h3>📚 학생의 하루</h3>
-      <svg id="demo-student" aria-label="학생 시간표 예시"></svg>
+      <h3 data-i18n="examples.persona1Title">📚 학생의 하루</h3>
+      <svg id="demo-student" aria-label="학생 시간표 예시" data-i18n-aria-label="examples.persona1Alt"></svg>
       <ul class="legend" id="legend-student"></ul>
-      <p style="font-size:14px; margin-top:10px;">
+      <p style="font-size:14px; margin-top:10px;" data-i18n="examples.persona1Desc">
         등교부터 자습, 숙제까지 이어지는 하루를 색으로 나누면, "오늘 공부에 시간을 얼마나 썼는지"가 한눈에 보입니다.
         22시 이후 빈 시계판은 취침 시간이에요.
       </p>
     </div>
 
     <div class="persona-card">
-      <h3>💼 직장인의 하루</h3>
-      <svg id="demo-worker" aria-label="직장인 시간표 예시"></svg>
+      <h3 data-i18n="examples.persona2Title">💼 직장인의 하루</h3>
+      <svg id="demo-worker" aria-label="직장인 시간표 예시" data-i18n-aria-label="examples.persona2Alt"></svg>
       <ul class="legend" id="legend-worker"></ul>
-      <p style="font-size:14px; margin-top:10px;">
+      <p style="font-size:14px; margin-top:10px;" data-i18n="examples.persona2Desc">
         업무·회의·점심·개인 시간을 구분해두면, 회의가 몰린 날인지 여유 있는 날인지 시계 모양만 봐도 알 수 있습니다.
       </p>
     </div>
 
     <div class="persona-card">
-      <h3>🏃 운동 루틴</h3>
-      <svg id="demo-fitness" aria-label="운동 루틴 시간표 예시"></svg>
+      <h3 data-i18n="examples.persona3Title">🏃 운동 루틴</h3>
+      <svg id="demo-fitness" aria-label="운동 루틴 시간표 예시" data-i18n-aria-label="examples.persona3Alt"></svg>
       <ul class="legend" id="legend-fitness"></ul>
-      <p style="font-size:14px; margin-top:10px;">
+      <p style="font-size:14px; margin-top:10px;" data-i18n="examples.persona3Desc">
         아침 러닝과 저녁 근력 운동처럼 규칙적으로 반복하고 싶은 루틴을 색으로 고정해두면, 매일 같은 시간에 알람으로 챙길 수 있어요.
       </p>
     </div>
 
   </div>
 
-  <h2>내 하루에 적용하려면</h2>
+  <h2 data-i18n="examples.h2">내 하루에 적용하려면</h2>
   <ol class="steps">
-    <li>위 예시 중 비슷한 생활 패턴을 하나 고릅니다.</li>
-    <li><a href="index.html">시계 페이지</a>를 열고, 예시의 시작·종료 시각과 이름을 그대로 입력해봅니다.</li>
-    <li>범주별로 같은 색을 반복해서 쓰면(예: 업무는 항상 파랑, 운동은 항상 빨강) 나중에 봤을 때 더 빠르게 읽힙니다.</li>
-    <li>자세한 입력 방법은 <a href="guide.html">사용법 페이지</a>를 참고하세요.</li>
+    <li data-i18n="examples.step1">위 예시 중 비슷한 생활 패턴을 하나 고릅니다.</li>
+    <li data-i18n-html="examples.step2"><a href="index.html">시계 페이지</a>를 열고, 예시의 시작·종료 시각과 이름을 그대로 입력해봅니다.</li>
+    <li data-i18n="examples.step3">범주별로 같은 색을 반복해서 쓰면(예: 업무는 항상 파랑, 운동은 항상 빨강) 나중에 봤을 때 더 빠르게 읽힙니다.</li>
+    <li data-i18n-html="examples.step4">자세한 입력 방법은 <a href="guide.html">사용법 페이지</a>를 참고하세요.</li>
   </ol>
 
   <div class="btn-row">
-    <a class="btn" href="index.html">지금 만들어보기 →</a>
-    <a class="btn secondary" href="guide.html">사용법 보기</a>
+    <a class="btn" href="index.html" data-i18n="common.createNow">지금 만들어보기 →</a>
+    <a class="btn secondary" href="guide.html" data-i18n="common.viewGuide">사용법 보기</a>
   </div>
 </div>
 
@@ -88,6 +90,7 @@
 <script>
 function renderLegend(ulId, events) {
   var ul = document.getElementById(ulId);
+  ul.innerHTML = "";
   events.forEach(function (evt) {
     var li = document.createElement("li");
     var dot = document.createElement("span");
@@ -101,54 +104,76 @@ function renderLegend(ulId, events) {
   });
 }
 
-var studentEvents = [
-  { start: "07:00", end: "08:00", title: "기상 · 등교 준비", color: "#F59E0B" },
-  { start: "08:00", end: "09:00", title: "등교", color: "#3B82F6" },
-  { start: "09:00", end: "15:00", title: "학교 수업", color: "#14B8A6" },
-  { start: "15:00", end: "17:00", title: "방과 후 자습", color: "#8B5CF6" },
-  { start: "17:00", end: "18:00", title: "저녁 식사", color: "#F97316" },
-  { start: "18:00", end: "20:00", title: "숙제", color: "#16A34A" },
-  { start: "20:00", end: "22:00", title: "자유 시간", color: "#EC4899" }
+var STUDENT_TIMES = [
+  { start: "07:00", end: "08:00", color: "#F59E0B" },
+  { start: "08:00", end: "09:00", color: "#3B82F6" },
+  { start: "09:00", end: "15:00", color: "#14B8A6" },
+  { start: "15:00", end: "17:00", color: "#8B5CF6" },
+  { start: "17:00", end: "18:00", color: "#F97316" },
+  { start: "18:00", end: "20:00", color: "#16A34A" },
+  { start: "20:00", end: "22:00", color: "#EC4899" }
 ];
 
-var workerEvents = [
-  { start: "07:00", end: "08:30", title: "출근 준비 · 이동", color: "#F59E0B" },
-  { start: "09:00", end: "12:00", title: "오전 업무", color: "#3B82F6" },
-  { start: "12:00", end: "13:00", title: "점심", color: "#F97316" },
-  { start: "13:00", end: "15:00", title: "회의", color: "#8B5CF6" },
-  { start: "15:00", end: "18:00", title: "오후 업무", color: "#14B8A6" },
-  { start: "18:30", end: "19:30", title: "저녁 식사", color: "#16A34A" },
-  { start: "19:30", end: "21:00", title: "운동", color: "#EF4444" },
-  { start: "21:00", end: "23:00", title: "개인 시간", color: "#EC4899" }
+var WORKER_TIMES = [
+  { start: "07:00", end: "08:30", color: "#F59E0B" },
+  { start: "09:00", end: "12:00", color: "#3B82F6" },
+  { start: "12:00", end: "13:00", color: "#F97316" },
+  { start: "13:00", end: "15:00", color: "#8B5CF6" },
+  { start: "15:00", end: "18:00", color: "#14B8A6" },
+  { start: "18:30", end: "19:30", color: "#16A34A" },
+  { start: "19:30", end: "21:00", color: "#EF4444" },
+  { start: "21:00", end: "23:00", color: "#EC4899" }
 ];
 
-var fitnessEvents = [
-  { start: "06:00", end: "06:30", title: "기상 스트레칭", color: "#F59E0B" },
-  { start: "06:30", end: "07:30", title: "아침 러닝", color: "#EF4444" },
-  { start: "08:00", end: "09:00", title: "아침 식사", color: "#F97316" },
-  { start: "09:00", end: "17:00", title: "업무", color: "#3B82F6" },
-  { start: "18:00", end: "19:30", title: "근력 운동", color: "#8B5CF6" },
-  { start: "19:30", end: "20:00", title: "마무리 스트레칭", color: "#14B8A6" },
-  { start: "20:00", end: "21:00", title: "저녁 식사", color: "#16A34A" },
-  { start: "21:00", end: "22:00", title: "독서 · 휴식", color: "#EC4899" }
+var FITNESS_TIMES = [
+  { start: "06:00", end: "06:30", color: "#F59E0B" },
+  { start: "06:30", end: "07:30", color: "#EF4444" },
+  { start: "08:00", end: "09:00", color: "#F97316" },
+  { start: "09:00", end: "17:00", color: "#3B82F6" },
+  { start: "18:00", end: "19:30", color: "#8B5CF6" },
+  { start: "19:30", end: "20:00", color: "#14B8A6" },
+  { start: "20:00", end: "21:00", color: "#16A34A" },
+  { start: "21:00", end: "22:00", color: "#EC4899" }
 ];
 
-renderDemoClock(document.getElementById("demo-student"), studentEvents);
-renderLegend("legend-student", studentEvents);
+function buildEvents(times, titles) {
+  return times.map(function (slot, i) {
+    return { start: slot.start, end: slot.end, color: slot.color, title: titles[i] };
+  });
+}
 
-renderDemoClock(document.getElementById("demo-worker"), workerEvents);
-renderLegend("legend-worker", workerEvents);
+var KO_FALLBACK = {
+  student: ["기상 · 등교 준비", "등교", "학교 수업", "방과 후 자습", "저녁 식사", "숙제", "자유 시간"],
+  worker: ["출근 준비 · 이동", "오전 업무", "점심", "회의", "오후 업무", "저녁 식사", "운동", "개인 시간"],
+  fitness: ["기상 스트레칭", "아침 러닝", "아침 식사", "업무", "근력 운동", "마무리 스트레칭", "저녁 식사", "독서 · 휴식"]
+};
 
-renderDemoClock(document.getElementById("demo-fitness"), fitnessEvents);
-renderLegend("legend-fitness", fitnessEvents);
+function renderAllDemos() {
+  var t = window.RoundClockI18n ? window.RoundClockI18n.t : null;
+  var studentEvents = buildEvents(STUDENT_TIMES, t ? t("examples.studentTitles") : KO_FALLBACK.student);
+  var workerEvents = buildEvents(WORKER_TIMES, t ? t("examples.workerTitles") : KO_FALLBACK.worker);
+  var fitnessEvents = buildEvents(FITNESS_TIMES, t ? t("examples.fitnessTitles") : KO_FALLBACK.fitness);
+
+  renderDemoClock(document.getElementById("demo-student"), studentEvents);
+  renderLegend("legend-student", studentEvents);
+
+  renderDemoClock(document.getElementById("demo-worker"), workerEvents);
+  renderLegend("legend-worker", workerEvents);
+
+  renderDemoClock(document.getElementById("demo-fitness"), fitnessEvents);
+  renderLegend("legend-fitness", fitnessEvents);
+}
+
+renderAllDemos();
+window.addEventListener("roundclock:langchange", renderAllDemos);
 </script>
 
 <footer class="site-footer">
   <div class="footer-links">
-    <a href="privacy.html">개인정보처리방침</a>
-    <a href="mailto:goe9733309@gmail.com">문의하기</a>
+    <a href="privacy.html" data-i18n="footer.privacy">개인정보처리방침</a>
+    <a href="mailto:goe9733309@gmail.com" data-i18n="footer.contact">문의하기</a>
   </div>
-  <p>&copy; 2026 둥근 24시간 시간표</p>
+  <p data-i18n="footer.copyright">&copy; 2026 둥근 24시간 시간표</p>
 </footer>
 
 </body>

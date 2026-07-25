@@ -138,6 +138,24 @@ html, body {
   color: var(--bg);
 }
 
+.site-nav-lang {
+  padding: 7px 16px;
+  border-radius: 980px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+.site-nav-lang:hover {
+  color: var(--ink);
+  background: var(--border-soft);
+}
+
 .page {
   max-width: 880px;
   margin: 0 auto;
