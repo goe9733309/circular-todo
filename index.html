@@ -240,7 +240,7 @@
     width: 100%;
     max-width: 560px;
     height: auto;
-    margin-top: -80px;
+    margin-top: 0;
     animation: clockScaleIn 0.7s var(--ease) both;
   }
 
@@ -484,13 +484,26 @@
 
   .event-item {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    gap: 6px;
     background: var(--event-item-bg);
     border: 1px solid var(--event-item-border);
     border-radius: 14px;
     padding: 10px 12px;
     transition: opacity 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+
+  .event-row-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .event-row-bottom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 23px;
   }
 
   .event-item:hover {
@@ -546,7 +559,9 @@
 
   .event-title {
     flex: 1;
+    min-width: 0;
     font-size: 16px;
+    font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -560,6 +575,7 @@
     font-family: inherit;
     cursor: pointer;
     padding: 4px 6px;
+    flex-shrink: 0;
   }
 
   .event-empty {
@@ -690,6 +706,7 @@
 
   #hand {
     stroke: var(--hand-color);
+    fill: var(--hand-color);
     transform-origin: 200px 200px;
     transition: transform 0.25s linear;
   }
@@ -976,6 +993,12 @@
     cursor: not-allowed !important;
   }
 
+  .export-menu-divider {
+    height: 1px;
+    margin: 4px 6px;
+    background: var(--border-soft);
+  }
+
   .export-menu-disabled:hover {
     background: none !important;
   }
@@ -1022,7 +1045,6 @@
 
     #clock-svg {
       max-width: 380px;
-      margin-top: -55px;
     }
 
     .list-panel {
@@ -1068,6 +1090,12 @@
     <div class="export-menu hidden" id="export-menu">
       <button type="button" id="export-image" data-i18n="nav.exportImage">🖼️ 이미지로 저장</button>
       <button type="button" id="export-pdf" data-i18n="nav.exportPdf">📄 PDF로 저장</button>
+      <div class="export-menu-divider"></div>
+      <button type="button" id="export-image-full" data-i18n="nav.exportImageFull">🖼️ 이미지로 저장 (제목+시간 포함)</button>
+      <button type="button" id="export-pdf-full" data-i18n="nav.exportPdfFull">📄 PDF로 저장 (제목+시간 포함)</button>
+      <div class="export-menu-divider"></div>
+      <button type="button" id="export-html" data-i18n="nav.exportHtml">🌐 HTML로 내보내기 (살아있는 시계)</button>
+      <div class="export-menu-divider"></div>
       <button type="button" class="export-menu-disabled" id="export-widget" data-i18n="nav.exportWidget">🖥️ Windows 위젯 (작업 예정)</button>
     </div>
   </div>
@@ -1110,8 +1138,8 @@
       <g id="drag-preview"></g>
 
       <g id="hand-group">
-        <line id="hand" x1="200" y1="200" x2="200" y2="150" stroke="#3a3530" stroke-width="3" stroke-linecap="round"></line>
-        <circle class="hand-center" cx="200" cy="200" r="6" fill="#3a3530"></circle>
+        <g id="hand"></g>
+        <circle class="hand-center" cx="200" cy="200" r="6"></circle>
       </g>
     </svg>
   </div>
@@ -1170,6 +1198,21 @@
               <label><input type="radio" name="title-mode" value="title"> <span data-i18n="app.showTitle">제목</span></label>
               <label><input type="radio" name="title-mode" value="both"> <span data-i18n="app.showBoth">둘다</span></label>
             </div>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="hand-shape-select" data-i18n="app.handShapeLabel">바늘 모양</label>
+            <select id="hand-shape-select">
+              <option value="bar" data-i18n="app.handShapeBar">막대형 (기본)</option>
+              <option value="arrow" data-i18n="app.handShapeArrow">화살표형</option>
+              <option value="diamond" data-i18n="app.handShapeDiamond">다이아몬드형</option>
+              <option value="taper" data-i18n="app.handShapeTaper">물방울형</option>
+            </select>
+          </div>
+          <div class="range-field">
+            <label for="hand-thickness"><span data-i18n="app.handThicknessLabel">바늘 두께</span><span id="hand-thickness-value">3px</span></label>
+            <input type="range" id="hand-thickness" min="1" max="10" step="1" value="3">
           </div>
         </div>
         <div class="row-2">
@@ -1276,6 +1319,7 @@
   var CLOCK_STYLE_KEY = "roundClock_clockStyle";
   var THEME_KEY = "roundClock_theme";
   var EXAMPLE_SEEDED_KEY = "roundClock_exampleSeeded";
+  var HAND_SETTINGS_KEY = "roundClock_handSettings";
 
   var CLOCK_STYLES = {
     donut: {
@@ -1285,7 +1329,7 @@
       tickMinorOuter: 95, tickMinorInner: 87,
       hourLabelR: 58,
       labelR: 141.5,
-      handLen: 50,
+      handLen: 95,
       markerR: 208,
       maxLinesOverride: null
     },
@@ -1296,7 +1340,7 @@
       tickMinorOuter: 190, tickMinorInner: 180,
       hourLabelR: 157,
       labelR: 120,
-      handLen: 130,
+      handLen: 195,
       markerR: 208,
       maxLinesOverride: null
     },
@@ -1307,7 +1351,7 @@
       tickMinorOuter: 195, tickMinorInner: 188,
       hourLabelR: 187,
       labelR: 89,
-      handLen: 50,
+      handLen: 195,
       markerR: 208,
       maxLinesOverride: null
     },
@@ -1318,7 +1362,7 @@
       tickMinorOuter: 170, tickMinorInner: 160,
       hourLabelR: 145,
       labelR: 202,
-      handLen: 130,
+      handLen: 170,
       markerR: 214,
       maxLinesOverride: 2
     }
@@ -1345,6 +1389,12 @@
     titleFontSize: 22,
     timeFontSize: 40
   };
+
+  var handSettings = {
+    shape: "bar",
+    thickness: 3
+  };
+  var currentHandLength = 76;
 
   function t(key, vars) {
     return window.RoundClockI18n ? window.RoundClockI18n.t(key, vars) : key;
@@ -1523,6 +1573,74 @@
     localStorage.setItem(TITLE_SETTINGS_KEY, JSON.stringify(titleSettings));
   }
 
+  function loadHandSettings() {
+    var raw = localStorage.getItem(HAND_SETTINGS_KEY);
+    if (!raw) {
+      return;
+    }
+    try {
+      var parsed = JSON.parse(raw);
+      if (["bar", "arrow", "diamond", "taper"].indexOf(parsed.shape) !== -1) {
+        handSettings.shape = parsed.shape;
+      }
+      if (typeof parsed.thickness === "number") {
+        handSettings.thickness = parsed.thickness;
+      }
+    } catch (e) {
+      // ignore malformed settings
+    }
+  }
+
+  function saveHandSettings() {
+    localStorage.setItem(HAND_SETTINGS_KEY, JSON.stringify(handSettings));
+  }
+
+  function renderHandShape() {
+    var group = document.getElementById("hand");
+    group.innerHTML = "";
+
+    var length = currentHandLength;
+    var thickness = handSettings.thickness;
+    var tipY = CY - length;
+
+    function addShaft(toY) {
+      group.appendChild(svgEl("line", {
+        x1: CX, y1: CY, x2: CX, y2: toY,
+        "stroke-width": thickness,
+        "stroke-linecap": "round"
+      }));
+    }
+
+    if (handSettings.shape === "arrow") {
+      var headLen = Math.min(length * 0.5, Math.max(14, thickness * 4));
+      var headW = thickness * 2.4;
+      var baseY = tipY + headLen;
+      addShaft(baseY + 1);
+      group.appendChild(svgEl("polygon", {
+        points: CX + "," + tipY + " " + (CX - headW / 2) + "," + baseY + " " + (CX + headW / 2) + "," + baseY,
+        stroke: "none"
+      }));
+    } else if (handSettings.shape === "diamond") {
+      var dLen = Math.min(length * 0.5, Math.max(16, thickness * 4.5));
+      var dW = thickness * 2.2;
+      var dBaseY = tipY + dLen;
+      var dMidY = tipY + dLen / 2;
+      addShaft(dBaseY + 1);
+      group.appendChild(svgEl("polygon", {
+        points: CX + "," + tipY + " " + (CX + dW / 2) + "," + dMidY + " " + CX + "," + dBaseY + " " + (CX - dW / 2) + "," + dMidY,
+        stroke: "none"
+      }));
+    } else if (handSettings.shape === "taper") {
+      var baseW = thickness * 2.4;
+      group.appendChild(svgEl("polygon", {
+        points: (CX - baseW / 2) + "," + CY + " " + (CX + baseW / 2) + "," + CY + " " + CX + "," + tipY,
+        stroke: "none"
+      }));
+    } else {
+      addShaft(tipY);
+    }
+  }
+
   function applyTitleSettings() {
     var container = document.getElementById("live-time-title");
     container.classList.remove("mode-time", "mode-title", "mode-both");
@@ -1582,6 +1700,19 @@
     localStorage.setItem(BAND_THICKNESS_KEY, JSON.stringify(clockThickness));
   }
 
+  function adjustClockSpacing() {
+    var svg = document.getElementById("clock-svg");
+    var faceCircle = document.getElementById("clock-face-circle");
+    var viewBox = svg.viewBox.baseVal;
+    var r = parseFloat(faceCircle.getAttribute("r"));
+    var cy = parseFloat(faceCircle.getAttribute("cy"));
+    var emptyFraction = (cy - r - viewBox.y) / viewBox.height;
+    var renderedHeight = svg.getBoundingClientRect().height;
+    var gapPx = 10;
+
+    svg.style.marginTop = Math.round(gapPx - emptyFraction * renderedHeight) + "px";
+  }
+
   function applyClockStyle(key) {
     var preset = CLOCK_STYLES[key] ? CLOCK_STYLES[key] : CLOCK_STYLES.donut;
     currentClockStyleKey = CLOCK_STYLES[key] ? key : "donut";
@@ -1605,7 +1736,8 @@
     LABEL_MAX_LINES_OVERRIDE = preset.maxLinesOverride || null;
 
     document.getElementById("clock-face-circle").setAttribute("r", preset.faceR);
-    document.getElementById("hand").setAttribute("y2", CY - preset.handLen);
+    currentHandLength = preset.handLen;
+    renderHandShape();
 
     var thicknessInput = document.getElementById("band-thickness");
     var thicknessValue = document.getElementById("band-thickness-value");
@@ -1617,6 +1749,7 @@
 
     buildTicksAndLabels();
     refreshAll();
+    adjustClockSpacing();
   }
 
   function wrapLabelLines(title, angleSpanDeg, fontSize) {
@@ -2356,6 +2489,11 @@
         li.classList.add("event-completed");
       }
 
+      var rowTop = document.createElement("div");
+      rowTop.className = "event-row-top";
+      var rowBottom = document.createElement("div");
+      rowBottom.className = "event-row-bottom";
+
       var completeCheckbox = document.createElement("input");
       completeCheckbox.type = "checkbox";
       completeCheckbox.className = "event-complete-checkbox";
@@ -2366,30 +2504,12 @@
         li.classList.toggle("event-completed", evt.completed);
         saveEvents();
       });
-      li.appendChild(completeCheckbox);
-
-      var dot = document.createElement("span");
-      dot.className = "event-color-dot";
-      dot.style.background = evt.color;
-
-      var time = document.createElement("span");
-      time.className = "event-time";
-      time.textContent = evt.startTime + " - " + evt.endTime;
+      rowTop.appendChild(completeCheckbox);
 
       var title = document.createElement("span");
       title.className = "event-title";
       title.textContent = evt.title;
-
-      li.appendChild(dot);
-      li.appendChild(time);
-      li.appendChild(title);
-
-      if (evt.alarmEnabled) {
-        var alarmFlag = document.createElement("span");
-        alarmFlag.className = "event-alarm-flag";
-        alarmFlag.textContent = "🔔 " + (evt.alarmTriggerPoint === "end" ? t("app.alarmFlagEnd") : t("app.alarmFlagStart"));
-        li.appendChild(alarmFlag);
-      }
+      rowTop.appendChild(title);
 
       var delBtn = document.createElement("button");
       delBtn.type = "button";
@@ -2400,8 +2520,27 @@
         saveEvents();
         refreshAll();
       });
+      rowTop.appendChild(delBtn);
 
-      li.appendChild(delBtn);
+      var dot = document.createElement("span");
+      dot.className = "event-color-dot";
+      dot.style.background = evt.color;
+      rowBottom.appendChild(dot);
+
+      var time = document.createElement("span");
+      time.className = "event-time";
+      time.textContent = evt.startTime + " - " + evt.endTime;
+      rowBottom.appendChild(time);
+
+      if (evt.alarmEnabled) {
+        var alarmFlag = document.createElement("span");
+        alarmFlag.className = "event-alarm-flag";
+        alarmFlag.textContent = "🔔 " + (evt.alarmTriggerPoint === "end" ? t("app.alarmFlagEnd") : t("app.alarmFlagStart"));
+        rowBottom.appendChild(alarmFlag);
+      }
+
+      li.appendChild(rowTop);
+      li.appendChild(rowBottom);
       list.appendChild(li);
     });
   }
@@ -2516,7 +2655,17 @@
 
     titleEl.style.display = "none";
 
-    return html2canvas(panel, { backgroundColor: null, scale: scale, useCORS: true }).then(
+    return html2canvas(panel, {
+      backgroundColor: null,
+      scale: scale,
+      useCORS: true,
+      onclone: function (clonedDoc) {
+        var handGroup = clonedDoc.getElementById("hand-group");
+        if (handGroup) {
+          handGroup.style.display = "none";
+        }
+      }
+    }).then(
       function (fullCanvas) {
         var panelRect = panel.getBoundingClientRect();
         var svgRect = svg.getBoundingClientRect();
@@ -2540,6 +2689,29 @@
     );
   }
 
+  function captureFullPanel() {
+    var panel = document.querySelector(".clock-panel");
+    return html2canvas(panel, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      onclone: function (clonedDoc) {
+        var timeEl = clonedDoc.getElementById("time-text-display");
+        if (timeEl) {
+          timeEl.style.fontVariantNumeric = "normal";
+        }
+        var clonedSvg = clonedDoc.getElementById("clock-svg");
+        if (clonedSvg) {
+          clonedSvg.style.marginTop = "20px";
+        }
+        var handGroup = clonedDoc.getElementById("hand-group");
+        if (handGroup) {
+          handGroup.style.display = "none";
+        }
+      }
+    });
+  }
+
   function downloadBlob(blob, filename) {
     var url = URL.createObjectURL(blob);
     var link = document.createElement("a");
@@ -2551,34 +2723,188 @@
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
   }
 
-  function exportAsImage() {
+  function exportImageFrom(captureFn, suffix) {
     if (typeof html2canvas === "undefined") {
       showToast(t("app.exportErrorTitle"), t("app.exportErrorToast"), "⚠️");
       return;
     }
-    captureClockPanel().then(function (canvas) {
+    captureFn().then(function (canvas) {
       canvas.toBlob(function (blob) {
-        downloadBlob(blob, exportFileBaseName() + ".png");
+        downloadBlob(blob, exportFileBaseName() + suffix + ".png");
       }, "image/png");
     }).catch(function () {
       showToast(t("app.exportErrorTitle"), t("app.exportErrorToast"), "⚠️");
     });
   }
 
-  function exportAsPdf() {
+  function exportPdfFrom(captureFn, suffix) {
     if (typeof html2canvas === "undefined" || typeof window.jspdf === "undefined") {
       showToast(t("app.exportErrorTitle"), t("app.exportErrorToast"), "⚠️");
       return;
     }
-    captureClockPanel().then(function (canvas) {
+    captureFn().then(function (canvas) {
       var jsPDF = window.jspdf.jsPDF;
       var orientation = canvas.width >= canvas.height ? "landscape" : "portrait";
       var pdf = new jsPDF({ orientation: orientation, unit: "px", format: [canvas.width, canvas.height] });
       pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, canvas.width, canvas.height);
-      pdf.save(exportFileBaseName() + ".pdf");
+      pdf.save(exportFileBaseName() + suffix + ".pdf");
     }).catch(function () {
       showToast(t("app.exportErrorTitle"), t("app.exportErrorToast"), "⚠️");
     });
+  }
+
+  function exportAsImage() {
+    exportImageFrom(captureClockPanel, "");
+  }
+
+  function exportAsPdf() {
+    exportPdfFrom(captureClockPanel, "");
+  }
+
+  function exportAsImageFull() {
+    exportImageFrom(captureFullPanel, "_full");
+  }
+
+  function exportAsPdfFull() {
+    exportPdfFrom(captureFullPanel, "_full");
+  }
+
+  function buildStandaloneClockHtml() {
+    var preset = CLOCK_STYLES[currentClockStyleKey] || CLOCK_STYLES.donut;
+    var lang = window.RoundClockI18n ? window.RoundClockI18n.getLang() : "ko";
+    var titleText = titleSettings.titleByLang[lang] || t("app.defaultTitle");
+    var themeAttr = document.documentElement.getAttribute("data-theme") || "";
+
+    var simplifiedEvents = events.map(function (evt) {
+      return {
+        startTime: evt.startTime,
+        endTime: evt.endTime,
+        title: evt.title,
+        color: evt.color,
+        alarmEnabled: !!evt.alarmEnabled,
+        alarmTriggerPoint: evt.alarmTriggerPoint || "start"
+      };
+    });
+
+    var data = {
+      face: preset.faceR,
+      bandOuter: BAND_OUTER_R,
+      bandInner: BAND_INNER_R,
+      tickMajorOuter: RADIUS_MAJOR_OUTER,
+      tickMajorInner: RADIUS_MAJOR_INNER,
+      tickMinorOuter: RADIUS_MINOR_OUTER,
+      tickMinorInner: RADIUS_MINOR_INNER,
+      hourLabelR: RADIUS_LABEL,
+      markerR: MARKER_RADIUS,
+      handLen: currentHandLength,
+      handShape: handSettings.shape,
+      handThickness: handSettings.thickness,
+      title: titleText,
+      font: titleSettings.font,
+      titleFontSize: titleSettings.titleFontSize,
+      timeFontSize: titleSettings.timeFontSize,
+      theme: themeAttr,
+      events: simplifiedEvents
+    };
+
+    var json = JSON.stringify(data).replace(/</g, "\\u003c");
+    var titleHtml = titleText.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+    var lines = [
+      "<!DOCTYPE html>",
+      "<html lang=\"" + lang + "\"" + (themeAttr ? " data-theme=\"" + themeAttr + "\"" : "") + ">",
+      "<head>",
+      "<meta charset=\"UTF-8\">",
+      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
+      "<title>" + titleHtml + "</title>",
+      "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">",
+      "<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>",
+      "<link href=\"https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Pen+Script&family=Single+Day&family=Nanum+Brush+Script&family=Hi+Melody&family=Gowun+Dodum&family=Jua&family=Nanum+Gothic:wght@400;700&family=Noto+Sans+KR:wght@400;700;900&family=Black+Han+Sans&family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap\" rel=\"stylesheet\">",
+      "<style>",
+      "  * { box-sizing: border-box; }",
+      "  :root {",
+      "    --bg: #f5f5f7; --ink: #1d1d1f; --ink-soft: #6e6e73;",
+      "    --tick-major: #1d1d1f; --tick-minor: rgba(0,0,0,0.22); --tick-label: #1d1d1f;",
+      "    --hand-color: #1d1d1f; --face-fill: #ffffff; --face-stroke: rgba(0,0,0,0.08); --alarm-color: #a9762e;",
+      "  }",
+      "  @media (prefers-color-scheme: dark) {",
+      "    :root:not([data-theme=\"light\"]) {",
+      "      --bg: #000000; --ink: #f5f5f7; --ink-soft: #98989d;",
+      "      --tick-major: #f5f5f7; --tick-minor: rgba(255,255,255,0.25); --tick-label: #f5f5f7;",
+      "      --hand-color: #f5f5f7; --face-fill: #1c1c1e; --face-stroke: rgba(255,255,255,0.1); --alarm-color: #e6bd6e;",
+      "    }",
+      "  }",
+      "  :root[data-theme=\"dark\"] {",
+      "    --bg: #000000; --ink: #f5f5f7; --ink-soft: #98989d;",
+      "    --tick-major: #f5f5f7; --tick-minor: rgba(255,255,255,0.25); --tick-label: #f5f5f7;",
+      "    --hand-color: #f5f5f7; --face-fill: #1c1c1e; --face-stroke: rgba(255,255,255,0.1); --alarm-color: #e6bd6e;",
+      "  }",
+      "  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); display:flex; align-items:center; justify-content:center; font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif; }",
+      "  .clock-wrap { text-align:center; padding:24px; }",
+      "  .title-text { font-size:" + data.titleFontSize + "px; font-weight:600; color:var(--ink-soft); font-family:" + data.font + "; margin-bottom:4px; }",
+      "  .time-text { font-size:" + data.timeFontSize + "px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums; font-family:" + data.font + "; margin-bottom:10px; }",
+      "  #clock-svg { width:100%; max-width:520px; height:auto; }",
+      "  #face-circle { fill:var(--face-fill); stroke:var(--face-stroke); stroke-width:2; }",
+      "  .tick-major { stroke:var(--tick-major); stroke-width:2.2; stroke-linecap:round; }",
+      "  .tick-minor { stroke:var(--tick-minor); stroke-width:1.3; stroke-linecap:round; }",
+      "  .tick-label { font-size:15px; font-weight:700; fill:var(--tick-label); text-anchor:middle; dominant-baseline:middle; }",
+      "  #hand { stroke:var(--hand-color); fill:var(--hand-color); transform-origin:200px 200px; transition:transform 0.25s linear; }",
+      "  .hand-center { fill:var(--hand-color); }",
+      "</style>",
+      "</head>",
+      "<body>",
+      "<div class=\"clock-wrap\">",
+      "  <div class=\"title-text\" id=\"title-text\"></div>",
+      "  <div class=\"time-text\" id=\"time-text\">00:00:00</div>",
+      "  <svg id=\"clock-svg\" viewBox=\"-80 -80 560 560\">",
+      "    <defs>",
+      "      <symbol id=\"star-icon\" viewBox=\"0 0 20 20\">",
+      "        <path d=\"M10 1.2 L12.35 7.2 L18.8 7.64 L13.85 11.76 L15.51 18 L10 14.4 L4.49 18 L6.15 11.76 L1.2 7.64 L7.65 7.2 Z\" fill=\"#f0ad4e\" stroke=\"#8a5a20\" stroke-width=\"0.8\" stroke-linejoin=\"round\"></path>",
+      "      </symbol>",
+      "    </defs>",
+      "    <circle id=\"face-circle\" cx=\"200\" cy=\"200\" r=\"" + data.face + "\"></circle>",
+      "    <g id=\"event-bands\"></g>",
+      "    <g id=\"ticks-major\"></g>",
+      "    <g id=\"ticks-minor\"></g>",
+      "    <g id=\"tick-labels\"></g>",
+      "    <g id=\"alarm-markers\"></g>",
+      "    <g id=\"hand-group\">",
+      "      <g id=\"hand\"></g>",
+      "      <circle class=\"hand-center\" cx=\"200\" cy=\"200\" r=\"6\"></circle>",
+      "    </g>",
+      "  </svg>",
+      "</div>",
+      "<script>",
+      "var DATA = " + json + ";",
+      "var CX=200, CY=200, SVG_NS='http://www.w3.org/2000/svg';",
+      "function pad2(n){ return n<10?'0'+n:''+n; }",
+      "function pointOnCircle(cx,cy,r,deg){ var rad=deg*Math.PI/180; return {x:cx+r*Math.sin(rad), y:cy-r*Math.cos(rad)}; }",
+      "function svgEl(tag,attrs){ var el=document.createElementNS(SVG_NS,tag); for(var k in attrs){ el.setAttribute(k,attrs[k]); } return el; }",
+      "function timeToDeg(hhmm){ var p=hhmm.split(':'); return (parseInt(p[0],10)*60+parseInt(p[1],10))*0.25; }",
+      "function describeArcBand(cx,cy,startDeg,endDeg,outerR,innerR){ var diff=endDeg-startDeg; var largeArc=diff>180?1:0; var os=pointOnCircle(cx,cy,outerR,startDeg), oe=pointOnCircle(cx,cy,outerR,endDeg), is_=pointOnCircle(cx,cy,innerR,startDeg), ie=pointOnCircle(cx,cy,innerR,endDeg); return ['M',os.x,os.y,'A',outerR,outerR,0,largeArc,1,oe.x,oe.y,'L',ie.x,ie.y,'A',innerR,innerR,0,largeArc,0,is_.x,is_.y,'Z'].join(' '); }",
+      "function buildTicks(){ var maj=document.getElementById('ticks-major'), min=document.getElementById('ticks-minor'), lab=document.getElementById('tick-labels'); for(var h=0;h<24;h++){ var d=h*15; var o=pointOnCircle(CX,CY,DATA.tickMajorOuter,d), i=pointOnCircle(CX,CY,DATA.tickMajorInner,d); maj.appendChild(svgEl('line',{x1:o.x,y1:o.y,x2:i.x,y2:i.y,'class':'tick-major'})); if(h%6===0){ var lp=pointOnCircle(CX,CY,DATA.hourLabelR,d); var t=svgEl('text',{x:lp.x,y:lp.y,'class':'tick-label'}); t.textContent=String(h); lab.appendChild(t); } for(var m=10;m<60;m+=10){ var md=d+m*0.25; var mo=pointOnCircle(CX,CY,DATA.tickMinorOuter,md), mi=pointOnCircle(CX,CY,DATA.tickMinorInner,md); min.appendChild(svgEl('line',{x1:mo.x,y1:mo.y,x2:mi.x,y2:mi.y,'class':'tick-minor'})); } } }",
+      "function renderBands(){ var g=document.getElementById('event-bands'); DATA.events.forEach(function(evt){ var sd=timeToDeg(evt.startTime), ed=timeToDeg(evt.endTime); var d=describeArcBand(CX,CY,sd,ed,DATA.bandOuter,DATA.bandInner); var path=svgEl('path',{d:d,fill:evt.color,'fill-opacity':'0.85',stroke:'rgba(0,0,0,0.15)','stroke-width':'1'}); var title=document.createElementNS(SVG_NS,'title'); title.textContent=evt.title+' ('+evt.startTime+' - '+evt.endTime+')'; path.appendChild(title); g.appendChild(path); }); }",
+      "function renderAlarms(){ var g=document.getElementById('alarm-markers'); DATA.events.forEach(function(evt){ if(!evt.alarmEnabled) return; var tt=evt.alarmTriggerPoint==='end'?evt.endTime:evt.startTime; var deg=timeToDeg(tt); var pos=pointOnCircle(CX,CY,DATA.markerR,deg); var size=18; var marker=svgEl('use',{href:'#star-icon',x:pos.x-size/2,y:pos.y-size/2,width:size,height:size}); marker.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href','#star-icon'); var title=document.createElementNS(SVG_NS,'title'); title.textContent=evt.title+' ('+tt+')'; marker.appendChild(title); g.appendChild(marker); }); }",
+      "function renderHand(){ var group=document.getElementById('hand'); group.innerHTML=''; var length=DATA.handLen, thickness=DATA.handThickness, tipY=CY-length; function shaft(toY){ group.appendChild(svgEl('line',{x1:CX,y1:CY,x2:CX,y2:toY,'stroke-width':thickness,'stroke-linecap':'round'})); } if(DATA.handShape==='arrow'){ var headLen=Math.min(length*0.5,Math.max(14,thickness*4)), headW=thickness*2.4, baseY=tipY+headLen; shaft(baseY+1); group.appendChild(svgEl('polygon',{points:CX+','+tipY+' '+(CX-headW/2)+','+baseY+' '+(CX+headW/2)+','+baseY,stroke:'none'})); } else if(DATA.handShape==='diamond'){ var dLen=Math.min(length*0.5,Math.max(16,thickness*4.5)), dW=thickness*2.2, dBaseY=tipY+dLen, dMidY=tipY+dLen/2; shaft(dBaseY+1); group.appendChild(svgEl('polygon',{points:CX+','+tipY+' '+(CX+dW/2)+','+dMidY+' '+CX+','+dBaseY+' '+(CX-dW/2)+','+dMidY,stroke:'none'})); } else if(DATA.handShape==='taper'){ var baseW=thickness*2.4; group.appendChild(svgEl('polygon',{points:(CX-baseW/2)+','+CY+' '+(CX+baseW/2)+','+CY+' '+CX+','+tipY,stroke:'none'})); } else { shaft(tipY); } }",
+      "function tick(){ var now=new Date(); var h=now.getHours(), m=now.getMinutes(), s=now.getSeconds(); var deg=((h*3600+m*60+s)/86400)*360; document.getElementById('hand').style.transform='rotate('+deg+'deg)'; document.getElementById('time-text').textContent=pad2(h)+':'+pad2(m)+':'+pad2(s); }",
+      "document.getElementById('title-text').textContent=DATA.title;",
+      "buildTicks(); renderBands(); renderAlarms(); renderHand(); tick(); setInterval(tick,1000);",
+      "<\/script>",
+      "</body>",
+      "</html>"
+    ];
+
+    return lines.join("\n");
+  }
+
+  function exportAsHtml() {
+    try {
+      var html = buildStandaloneClockHtml();
+      var blob = new Blob([html], { type: "text/html" });
+      downloadBlob(blob, exportFileBaseName() + ".html");
+    } catch (e) {
+      showToast(t("app.exportErrorTitle"), t("app.exportErrorToast"), "⚠️");
+    }
   }
 
   function initExportMenu() {
@@ -2604,6 +2930,21 @@
     document.getElementById("export-pdf").addEventListener("click", function () {
       menu.classList.add("hidden");
       exportAsPdf();
+    });
+
+    document.getElementById("export-image-full").addEventListener("click", function () {
+      menu.classList.add("hidden");
+      exportAsImageFull();
+    });
+
+    document.getElementById("export-pdf-full").addEventListener("click", function () {
+      menu.classList.add("hidden");
+      exportAsPdfFull();
+    });
+
+    document.getElementById("export-html").addEventListener("click", function () {
+      menu.classList.add("hidden");
+      exportAsHtml();
     });
 
     document.getElementById("export-widget").addEventListener("click", function () {
@@ -2781,6 +3122,29 @@
     });
   }
 
+  function initHandControls() {
+    var shapeSelect = document.getElementById("hand-shape-select");
+    var thicknessInput = document.getElementById("hand-thickness");
+    var thicknessValue = document.getElementById("hand-thickness-value");
+
+    shapeSelect.value = handSettings.shape;
+    thicknessInput.value = handSettings.thickness;
+    thicknessValue.textContent = handSettings.thickness + "px";
+
+    shapeSelect.addEventListener("change", function (e) {
+      handSettings.shape = e.target.value;
+      saveHandSettings();
+      renderHandShape();
+    });
+
+    thicknessInput.addEventListener("input", function (e) {
+      handSettings.thickness = parseInt(e.target.value, 10);
+      thicknessValue.textContent = handSettings.thickness + "px";
+      saveHandSettings();
+      renderHandShape();
+    });
+  }
+
   function init() {
     currentDateStr = todayDateStr();
 
@@ -2788,6 +3152,7 @@
     loadTitleSettings();
     loadClockStyle();
     loadBandThickness();
+    loadHandSettings();
     renderSwatches();
     loadEvents();
     seedExampleEventsIfFirstVisit();
@@ -2796,6 +3161,7 @@
     initTitleControls();
     initClockStyleControl();
     initBandThicknessControl();
+    initHandControls();
     initThemeControl();
     initClockFaceDragCreate();
 
@@ -2810,6 +3176,12 @@
     updateClockHand();
     setInterval(updateClockHand, 1000);
     setInterval(checkAlarms, ALARM_CHECK_INTERVAL_MS);
+
+    var resizeTimer = null;
+    window.addEventListener("resize", function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(adjustClockSpacing, 150);
+    });
 
     window.addEventListener("roundclock:langchange", function () {
       applyTitleSettings();
