@@ -238,7 +238,7 @@
 
   #clock-svg {
     width: 100%;
-    max-width: 560px;
+    max-width: 840px;
     height: auto;
     margin-top: 0;
     animation: clockScaleIn 0.7s var(--ease) both;
@@ -375,6 +375,7 @@
   }
 
   input[type="time"],
+  input[type="date"],
   input[type="text"],
   select {
     width: 100%;
@@ -389,11 +390,94 @@
   }
 
   input[type="time"]:focus,
+  input[type="date"]:focus,
   input[type="text"]:focus,
   select:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--event-current-shadow);
+  }
+
+  .list-panel-header {
+    margin-bottom: 10px;
+  }
+
+  .list-panel-header h2 {
+    margin-bottom: 8px;
+  }
+
+  .date-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .date-nav input[type="date"] {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .btn-outline-sm {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border: 1px solid var(--border-input);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-strong);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+  }
+
+  .btn-outline-sm:hover {
+    border-color: var(--accent);
+  }
+
+  .btn-outline-sm:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .date-nav-today-btn.is-today {
+    display: none;
+  }
+
+  .import-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .import-row input[type="date"] {
+    flex: 1;
+    min-width: 0;
+  }
+
+  #event-form-fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  #event-form-fieldset:disabled .swatch {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .past-date-notice {
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    background: var(--input-bg);
+    border: 1px solid var(--border-input);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
   }
 
   .swatches {
@@ -1044,7 +1128,7 @@
     }
 
     #clock-svg {
-      max-width: 380px;
+      max-width: 570px;
     }
 
     .list-panel {
@@ -1104,7 +1188,20 @@
 
 <div class="app">
   <div class="list-panel">
-    <h2 data-i18n="app.todoListHeading">오늘의 할 일 목록</h2>
+    <div class="list-panel-header">
+      <h2 data-i18n="app.todoListHeading">오늘의 할 일 목록</h2>
+      <div class="date-nav">
+        <input type="date" id="view-date-input" aria-label="날짜 선택" data-i18n-aria-label="app.dateInputAria">
+        <button type="button" class="btn-outline-sm date-nav-today-btn" id="date-today-btn" data-i18n="app.todayBtn">오늘</button>
+      </div>
+      <div class="field import-field">
+        <label for="import-date-input" data-i18n="app.importDateLabel">다른 날짜에서 불러오기</label>
+        <div class="import-row">
+          <input type="date" id="import-date-input">
+          <button type="button" class="btn-outline-sm" id="import-date-btn" data-i18n="app.importBtn">불러오기</button>
+        </div>
+      </div>
+    </div>
     <div class="card card-list">
       <ul class="event-list" id="event-list"></ul>
     </div>
@@ -1241,7 +1338,9 @@
 
     <h2 data-i18n="app.scheduleHeading">시간 설정</h2>
     <div class="card card-form">
+      <div class="past-date-notice" id="past-date-notice" data-i18n="app.pastDateNotice" hidden>지난 날짜의 할 일은 추가하거나 삭제할 수 없습니다.</div>
       <form id="event-form">
+        <fieldset id="event-form-fieldset">
         <div class="row-2">
           <div class="field">
             <label for="start-time" data-i18n="app.startTimeLabel">시작 시각</label>
@@ -1275,6 +1374,7 @@
         </div>
 
         <button type="submit" class="btn-add" data-i18n="app.addBtn">추가</button>
+        </fieldset>
         <div class="error-msg" id="error-msg"></div>
       </form>
     </div>
@@ -1380,6 +1480,7 @@
   var selectedColor = PASTEL_COLORS[0];
   var events = [];
   var currentDateStr = "";
+  var viewingDateStr = "";
   var tooltipTimer = null;
   var labelSettings = { fontSize: 14 };
   var titleSettings = {
@@ -2059,26 +2160,39 @@
     });
     resizeIcon.textContent = "↕";
 
-    var deleteCircle = svgEl("circle", {
-      cx: pos.x, cy: pos.y - handleOffset,
-      r: HANDLE_RADIUS,
-      class: "delete-handle-bg",
-      transform: transform
-    });
-    var deleteIcon = svgEl("text", {
-      x: pos.x, y: pos.y - handleOffset,
-      class: "delete-handle-icon",
-      transform: transform
-    });
-    deleteIcon.textContent = "×";
-
     group.appendChild(text);
     group.appendChild(handleCircle);
     group.appendChild(handleIcon);
     group.appendChild(resizeCircle);
     group.appendChild(resizeIcon);
-    group.appendChild(deleteCircle);
-    group.appendChild(deleteIcon);
+
+    if (!isPastViewingDate()) {
+      var deleteCircle = svgEl("circle", {
+        cx: pos.x, cy: pos.y - handleOffset,
+        r: HANDLE_RADIUS,
+        class: "delete-handle-bg",
+        transform: transform
+      });
+      var deleteIcon = svgEl("text", {
+        x: pos.x, y: pos.y - handleOffset,
+        class: "delete-handle-icon",
+        transform: transform
+      });
+      deleteIcon.textContent = "×";
+
+      group.appendChild(deleteCircle);
+      group.appendChild(deleteIcon);
+
+      deleteCircle.addEventListener("pointerdown", function (e) {
+        e.stopPropagation();
+      });
+      deleteCircle.addEventListener("click", function (e) {
+        e.stopPropagation();
+        events = events.filter(function (other) { return other.id !== evt.id; });
+        saveEvents();
+        refreshAll();
+      });
+    }
 
     var offsetX = evt.labelOffsetX || 0;
     var offsetY = evt.labelOffsetY || 0;
@@ -2087,16 +2201,6 @@
     attachRotateDrag(handleCircle, handleIcon, text, evt, pos, baseRotation);
     attachResizeDrag(resizeCircle, text, evt);
     attachLabelMoveDrag(text, group, evt);
-
-    deleteCircle.addEventListener("pointerdown", function (e) {
-      e.stopPropagation();
-    });
-    deleteCircle.addEventListener("click", function (e) {
-      e.stopPropagation();
-      events = events.filter(function (other) { return other.id !== evt.id; });
-      saveEvents();
-      refreshAll();
-    });
 
     return group;
   }
@@ -2178,6 +2282,9 @@
     }
 
     circle.addEventListener("pointerdown", function (e) {
+      if (isPastViewingDate()) {
+        return;
+      }
       e.preventDefault();
       clearDragDraft();
       dragging = true;
@@ -2318,6 +2425,8 @@
   }
 
   function refreshEventStatuses() {
+    var isToday = viewingDateStr === todayDateStr();
+    var isPastDay = !isToday && viewingDateStr < todayDateStr();
     var now = new Date();
     var nowHM = pad2(now.getHours()) + ":" + pad2(now.getMinutes());
     var items = document.querySelectorAll("#event-list .event-item");
@@ -2330,10 +2439,14 @@
         continue;
       }
       li.classList.remove("event-past", "event-current");
-      if (end <= nowHM) {
+      if (isPastDay) {
         li.classList.add("event-past");
-      } else if (start <= nowHM && nowHM < end) {
-        li.classList.add("event-current");
+      } else if (isToday) {
+        if (end <= nowHM) {
+          li.classList.add("event-past");
+        } else if (start <= nowHM && nowHM < end) {
+          li.classList.add("event-current");
+        }
       }
     }
   }
@@ -2341,9 +2454,11 @@
   function checkDateRollover() {
     var d = todayDateStr();
     if (d !== currentDateStr) {
+      var wasFollowingToday = (viewingDateStr === currentDateStr);
       currentDateStr = d;
-      loadEvents();
-      refreshAll();
+      if (wasFollowingToday) {
+        setViewingDate(d);
+      }
     }
   }
 
@@ -2352,8 +2467,12 @@
     return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
   }
 
+  function isPastViewingDate() {
+    return viewingDateStr < todayDateStr();
+  }
+
   function storageKey() {
-    return "roundClock_events_" + todayDateStr();
+    return "roundClock_events_" + viewingDateStr;
   }
 
   function loadEvents() {
@@ -2372,10 +2491,120 @@
 
   function saveEvents() {
     var payload = {
-      date: todayDateStr(),
+      date: viewingDateStr,
       events: events
     };
     localStorage.setItem(storageKey(), JSON.stringify(payload));
+  }
+
+  function setViewingDate(dateStr) {
+    viewingDateStr = dateStr;
+    var input = document.getElementById("view-date-input");
+    if (input) {
+      input.value = dateStr;
+    }
+    var todayBtn = document.getElementById("date-today-btn");
+    if (todayBtn) {
+      todayBtn.classList.toggle("is-today", dateStr === todayDateStr());
+    }
+    updatePastDateLock();
+    loadEvents();
+    refreshAll();
+  }
+
+  function updatePastDateLock() {
+    var isPast = isPastViewingDate();
+    var fieldset = document.getElementById("event-form-fieldset");
+    var notice = document.getElementById("past-date-notice");
+    var importInput = document.getElementById("import-date-input");
+    var importBtn = document.getElementById("import-date-btn");
+    if (fieldset) {
+      fieldset.disabled = isPast;
+    }
+    if (notice) {
+      notice.hidden = !isPast;
+    }
+    if (importInput) {
+      importInput.disabled = isPast;
+    }
+    if (importBtn) {
+      importBtn.disabled = isPast;
+    }
+  }
+
+  function initDateNav() {
+    var input = document.getElementById("view-date-input");
+    var todayBtn = document.getElementById("date-today-btn");
+
+    input.value = viewingDateStr;
+    todayBtn.classList.toggle("is-today", viewingDateStr === todayDateStr());
+    updatePastDateLock();
+
+    input.addEventListener("change", function (e) {
+      if (!e.target.value) {
+        return;
+      }
+      setViewingDate(e.target.value);
+    });
+
+    todayBtn.addEventListener("click", function () {
+      setViewingDate(todayDateStr());
+    });
+  }
+
+  function initImportDate() {
+    var importInput = document.getElementById("import-date-input");
+    var importBtn = document.getElementById("import-date-btn");
+
+    importBtn.addEventListener("click", function () {
+      var sourceDate = importInput.value;
+      if (!sourceDate) {
+        showError(t("app.importNeedDate"));
+        return;
+      }
+      if (sourceDate === viewingDateStr) {
+        showError(t("app.importSameDate"));
+        return;
+      }
+
+      var raw = localStorage.getItem("roundClock_events_" + sourceDate);
+      var sourceEvents = [];
+      if (raw) {
+        try {
+          var parsed = JSON.parse(raw);
+          sourceEvents = Array.isArray(parsed.events) ? parsed.events : [];
+        } catch (e) {
+          sourceEvents = [];
+        }
+      }
+      if (sourceEvents.length === 0) {
+        showError(t("app.importEmpty"));
+        return;
+      }
+
+      sourceEvents.forEach(function (evt) {
+        events.push({
+          id: genId(),
+          startTime: evt.startTime,
+          endTime: evt.endTime,
+          title: evt.title,
+          color: evt.color,
+          alarmEnabled: !!evt.alarmEnabled,
+          alarmTriggerPoint: evt.alarmTriggerPoint || "start",
+          alarmFiredToday: false,
+          completed: false,
+          labelRotation: 0,
+          labelFontSize: null,
+          labelOffsetX: 0,
+          labelOffsetY: 0
+        });
+      });
+
+      saveEvents();
+      refreshAll();
+      showError("");
+      importInput.value = "";
+    });
   }
 
   function genId() {
@@ -2473,6 +2702,8 @@
       return a.startTime.localeCompare(b.startTime);
     });
 
+    var isToday = viewingDateStr === todayDateStr();
+    var isPastDay = !isToday && viewingDateStr < todayDateStr();
     var nowHM = pad2(new Date().getHours()) + ":" + pad2(new Date().getMinutes());
 
     sorted.forEach(function (evt) {
@@ -2480,10 +2711,14 @@
       li.className = "event-item";
       li.setAttribute("data-start", evt.startTime);
       li.setAttribute("data-end", evt.endTime);
-      if (evt.endTime <= nowHM) {
+      if (isPastDay) {
         li.classList.add("event-past");
-      } else if (evt.startTime <= nowHM && nowHM < evt.endTime) {
-        li.classList.add("event-current");
+      } else if (isToday) {
+        if (evt.endTime <= nowHM) {
+          li.classList.add("event-past");
+        } else if (evt.startTime <= nowHM && nowHM < evt.endTime) {
+          li.classList.add("event-current");
+        }
       }
       if (evt.completed) {
         li.classList.add("event-completed");
@@ -2511,16 +2746,18 @@
       title.textContent = evt.title;
       rowTop.appendChild(title);
 
-      var delBtn = document.createElement("button");
-      delBtn.type = "button";
-      delBtn.className = "event-delete";
-      delBtn.textContent = t("app.deleteBtn");
-      delBtn.addEventListener("click", function () {
-        events = events.filter(function (e) { return e.id !== evt.id; });
-        saveEvents();
-        refreshAll();
-      });
-      rowTop.appendChild(delBtn);
+      if (!isPastDay) {
+        var delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "event-delete";
+        delBtn.textContent = t("app.deleteBtn");
+        delBtn.addEventListener("click", function () {
+          events = events.filter(function (e) { return e.id !== evt.id; });
+          saveEvents();
+          refreshAll();
+        });
+        rowTop.appendChild(delBtn);
+      }
 
       var dot = document.createElement("span");
       dot.className = "event-color-dot";
@@ -2551,6 +2788,10 @@
 
   function handleFormSubmit(e) {
     e.preventDefault();
+
+    if (isPastViewingDate()) {
+      return;
+    }
 
     var startTime = document.getElementById("start-time").value;
     var endTime = document.getElementById("end-time").value;
@@ -2967,6 +3208,9 @@
   }
 
   function checkAlarms() {
+    if (viewingDateStr !== todayDateStr()) {
+      return;
+    }
     var now = new Date();
     var nowHM = pad2(now.getHours()) + ":" + pad2(now.getMinutes());
     var fired = false;
@@ -3147,6 +3391,7 @@
 
   function init() {
     currentDateStr = todayDateStr();
+    viewingDateStr = currentDateStr;
 
     loadLabelSettings();
     loadTitleSettings();
@@ -3164,6 +3409,8 @@
     initHandControls();
     initThemeControl();
     initClockFaceDragCreate();
+    initDateNav();
+    initImportDate();
 
     document.getElementById("event-form").addEventListener("submit", handleFormSubmit);
     document.getElementById("alarm-enabled").addEventListener("change", function (e) {
