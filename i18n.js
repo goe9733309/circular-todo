@@ -189,6 +189,7 @@
         showTime: "시간",
         showTitle: "제목",
         showBoth: "둘다",
+        clockSizeLabel: "시계 크기",
         bandThickness: "밴드 두께",
         labelFontSize: "할 일 글자",
         titleFontSize: "제목 크기",
@@ -226,7 +227,23 @@
         comingSoonBody: "곧 만나보실 수 있어요!",
         exportingToast: "내보내는 중...",
         exportErrorTitle: "내보내기 오류",
-        exportErrorToast: "내보내기에 실패했습니다."
+        exportErrorToast: "내보내기에 실패했습니다.",
+        journalHeading: "저널",
+        journalPlaceholder: "오늘 하루를 기록해보세요...",
+        journalBgPickerAria: "배경 선택",
+        journalBgBlank: "공백",
+        journalBgLined: "줄무늬",
+        journalBgDotted: "점선",
+        journalBgGrid: "모눈종이",
+        journalFontLabel: "저널 글꼴",
+        journalFontDefault: "기본 글꼴",
+        journalFontSizeLabel: "글자 크기",
+        journalFontSizeDec: "글자 작게",
+        journalFontSizeInc: "글자 크게",
+        journalColumnsLabel: "단 수 선택",
+        journalCols1: "1단",
+        journalCols2: "2단",
+        journalCols3: "3단"
       }
     },
     en: {
@@ -414,6 +431,7 @@
         showTime: "Time",
         showTitle: "Title",
         showBoth: "Both",
+        clockSizeLabel: "Clock Size",
         bandThickness: "Band Thickness",
         labelFontSize: "Task Label",
         titleFontSize: "Title Size",
@@ -451,7 +469,23 @@
         comingSoonBody: "Coming soon!",
         exportingToast: "Exporting...",
         exportErrorTitle: "Export Error",
-        exportErrorToast: "Export failed."
+        exportErrorToast: "Export failed.",
+        journalHeading: "Journal",
+        journalPlaceholder: "Write about your day...",
+        journalBgPickerAria: "Choose background",
+        journalBgBlank: "Blank",
+        journalBgLined: "Lined",
+        journalBgDotted: "Dotted",
+        journalBgGrid: "Grid paper",
+        journalFontLabel: "Journal font",
+        journalFontDefault: "Default font",
+        journalFontSizeLabel: "Font size",
+        journalFontSizeDec: "Decrease font size",
+        journalFontSizeInc: "Increase font size",
+        journalColumnsLabel: "Choose column count",
+        journalCols1: "1 col",
+        journalCols2: "2 col",
+        journalCols3: "3 col"
       }
     }
   };

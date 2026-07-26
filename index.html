@@ -201,16 +201,37 @@
   }
 
   .clock-panel {
+    position: relative;
+    z-index: 0;
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
     background: transparent;
     --clock-font: 'Noto Sans KR', sans-serif;
     --title-font-size: 22px;
     --time-font-size: 40px;
+  }
+
+  .clock-half {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .journal-half {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 260px;
+  }
+
+  .clock-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: var(--clock-max-width, 840px);
   }
 
   .live-time-title {
@@ -247,10 +268,208 @@
 
   #clock-svg {
     width: 100%;
-    max-width: 840px;
+    max-width: var(--clock-max-width, 840px);
     height: auto;
     margin-top: 0;
     animation: clockScaleIn 0.7s var(--ease) both;
+  }
+
+  .journal-toolbar {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: calc(100% - 32px);
+    padding: 8px 10px;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    box-shadow: 0 4px 20px var(--shadow-soft);
+  }
+
+  .journal-toolbar-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .journal-bg-picker {
+    display: flex;
+    gap: 6px;
+  }
+
+  .journal-toolbar-divider {
+    width: 1px;
+    align-self: stretch;
+    background: var(--border-soft);
+  }
+
+  .journal-select {
+    height: 24px;
+    padding: 0 8px;
+    border: 1px solid var(--border-input);
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: inherit;
+    background: var(--input-bg);
+    color: var(--text-strong);
+    cursor: pointer;
+    max-width: 140px;
+  }
+
+  .journal-select-narrow {
+    max-width: 74px;
+  }
+
+  .journal-font-size-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .journal-font-size-btn {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--border-input);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text-strong);
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease);
+  }
+
+  .journal-font-size-btn:hover {
+    border-color: var(--accent);
+  }
+
+  .journal-font-size-value {
+    font-size: 11px;
+    color: var(--ink-soft);
+    min-width: 26px;
+    text-align: center;
+  }
+
+  .journal-bg-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    border: 1.5px solid var(--border-input);
+    background: var(--input-bg);
+    padding: 3px;
+    cursor: pointer;
+    transition: border-color 0.2s var(--ease), transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+
+  .journal-bg-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .journal-bg-btn.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--event-current-shadow);
+  }
+
+  .journal-bg-swatch {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    background-color: #fff;
+  }
+
+  .journal-bg-swatch-lined {
+    background-image: repeating-linear-gradient(to bottom, transparent, transparent 3px, #b0bbc7 3px, #b0bbc7 4px);
+  }
+
+  .journal-bg-swatch-dotted {
+    background-image: radial-gradient(#b0bbc7 1px, transparent 1.3px);
+    background-size: 4px 4px;
+  }
+
+  .journal-bg-swatch-grid {
+    background-image:
+      linear-gradient(#b0bbc7 1px, transparent 1px),
+      linear-gradient(90deg, #b0bbc7 1px, transparent 1px);
+    background-size: 4px 4px;
+  }
+
+  .journal-columns {
+    position: absolute;
+    top: 96px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 0;
+    display: flex;
+  }
+
+  .journal-textarea {
+    flex: 1 1 0;
+    min-width: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    resize: none;
+    border: none;
+    border-left: 1px solid var(--border-soft);
+    border-radius: 0;
+    padding: 18px 28px 32px;
+    --journal-line-height: 28px;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: var(--journal-line-height);
+    color: var(--text-strong);
+    background-color: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: background-color 0.3s var(--ease);
+  }
+
+  .journal-textarea:first-child {
+    border-left: none;
+    padding-left: 36px;
+  }
+
+  .journal-textarea:focus {
+    outline: none;
+  }
+
+  .journal-textarea.journal-bg-lined {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent calc(var(--journal-line-height) - 1px),
+      var(--border-input) calc(var(--journal-line-height) - 1px),
+      var(--border-input) var(--journal-line-height)
+    );
+    background-position: 0 13px;
+  }
+
+  .journal-textarea.journal-bg-dotted {
+    background-image: radial-gradient(var(--border-input) 1px, transparent 1.4px);
+    background-size: 16px 16px;
+  }
+
+  .journal-textarea.journal-bg-grid {
+    background-image:
+      linear-gradient(var(--border-input) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border-input) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
   .list-panel {
@@ -572,17 +791,17 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
   }
 
   .event-item {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px;
     background: var(--event-item-bg);
     border: 1px solid var(--event-item-border);
     border-radius: 14px;
-    padding: 10px 12px;
+    padding: 6px 12px;
     transition: opacity 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
   }
 
@@ -644,7 +863,7 @@
   }
 
   .event-time {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--ink-muted);
     font-weight: 700;
     white-space: nowrap;
@@ -653,7 +872,7 @@
   .event-title {
     flex: 1;
     min-width: 0;
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 600;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -664,7 +883,7 @@
     border: none;
     background: none;
     color: var(--error);
-    font-size: 14px;
+    font-size: 13px;
     font-family: inherit;
     cursor: pointer;
     padding: 4px 6px;
@@ -672,7 +891,7 @@
   }
 
   .event-empty {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--ink-faint);
     padding: 6px 2px;
   }
@@ -984,6 +1203,8 @@
   }
 
   .site-nav {
+    position: relative;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1132,12 +1353,45 @@
     }
 
     .clock-panel {
-      padding: 16px;
       order: -1;
     }
 
+    .clock-half {
+      padding: 16px;
+    }
+
     #clock-svg {
-      max-width: 570px;
+      max-width: min(570px, var(--clock-max-width, 840px));
+    }
+
+    .clock-stage {
+      max-width: min(570px, var(--clock-max-width, 840px));
+    }
+
+    .journal-columns {
+      top: 100px;
+      flex-direction: column;
+    }
+
+    .journal-textarea {
+      padding: 18px 20px 20px;
+      border-left: none;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .journal-textarea:first-child {
+      padding-left: 20px;
+      border-top: none;
+    }
+
+    .journal-toolbar {
+      top: 10px;
+      left: 10px;
+      gap: 8px;
+    }
+
+    .journal-select {
+      max-width: 110px;
     }
 
     .list-panel {
@@ -1217,37 +1471,93 @@
   </div>
 
   <div class="clock-panel">
-    <div class="live-time-title mode-time" id="live-time-title">
-      <div class="title-text" id="title-text-display">새 계획표</div>
-      <div class="time-text" id="time-text-display">00:00:00</div>
+    <div class="clock-half" id="clock-half">
+      <div class="clock-stage" id="clock-stage">
+        <div class="live-time-title mode-time" id="live-time-title">
+          <div class="title-text" id="title-text-display">새 계획표</div>
+          <div class="time-text" id="time-text-display">00:00:00</div>
+        </div>
+        <svg id="clock-svg" viewBox="-80 -80 560 560">
+          <defs>
+            <symbol id="star-icon" viewBox="0 0 20 20">
+              <path d="M10 1.2 L12.35 7.2 L18.8 7.64 L13.85 11.76 L15.51 18 L10 14.4 L4.49 18 L6.15 11.76 L1.2 7.64 L7.65 7.2 Z"
+                    fill="#f0ad4e" stroke="#8a5a20" stroke-width="0.8" stroke-linejoin="round"></path>
+            </symbol>
+          </defs>
+
+          <circle id="clock-face-circle" cx="200" cy="200" r="192" fill="#fffdf8" stroke="#ddd0b4" stroke-width="2"></circle>
+
+          <!-- Phase 2~3: 시간대 밴드 -->
+          <g id="event-bands"></g>
+
+          <g id="ticks-major"></g>
+          <g id="ticks-minor"></g>
+          <g id="tick-labels"></g>
+
+          <!-- Phase 2~3: 알람 마커 -->
+          <g id="alarm-markers"></g>
+
+          <g id="drag-preview"></g>
+
+          <g id="hand-group">
+            <g id="hand"></g>
+            <circle class="hand-center" cx="200" cy="200" r="6"></circle>
+          </g>
+        </svg>
+      </div>
     </div>
-    <svg id="clock-svg" viewBox="-80 -80 560 560">
-      <defs>
-        <symbol id="star-icon" viewBox="0 0 20 20">
-          <path d="M10 1.2 L12.35 7.2 L18.8 7.64 L13.85 11.76 L15.51 18 L10 14.4 L4.49 18 L6.15 11.76 L1.2 7.64 L7.65 7.2 Z"
-                fill="#f0ad4e" stroke="#8a5a20" stroke-width="0.8" stroke-linejoin="round"></path>
-        </symbol>
-      </defs>
 
-      <circle id="clock-face-circle" cx="200" cy="200" r="192" fill="#fffdf8" stroke="#ddd0b4" stroke-width="2"></circle>
+    <div class="journal-half" id="journal-half">
+      <div class="journal-columns" id="journal-columns">
+        <textarea id="journal-textarea" class="journal-textarea journal-col" data-i18n-aria-label="app.journalHeading" data-i18n-placeholder="app.journalPlaceholder" aria-label="저널" placeholder="오늘 하루를 기록해보세요..."></textarea>
+        <textarea id="journal-textarea-2" class="journal-textarea journal-col" data-i18n-aria-label="app.journalHeading" data-i18n-placeholder="app.journalPlaceholder" aria-label="저널" placeholder="오늘 하루를 기록해보세요..."></textarea>
+        <textarea id="journal-textarea-3" class="journal-textarea journal-col" data-i18n-aria-label="app.journalHeading" data-i18n-placeholder="app.journalPlaceholder" aria-label="저널" placeholder="오늘 하루를 기록해보세요..."></textarea>
+      </div>
 
-      <!-- Phase 2~3: 시간대 밴드 -->
-      <g id="event-bands"></g>
+      <div class="journal-toolbar" id="journal-toolbar">
+        <div class="journal-toolbar-row">
+          <div class="journal-bg-picker" id="journal-bg-picker" role="group" aria-label="배경 선택" data-i18n-aria-label="app.journalBgPickerAria">
+            <button type="button" class="journal-bg-btn" data-bg="blank" data-i18n-aria-label="app.journalBgBlank" aria-label="공백"><span class="journal-bg-swatch journal-bg-swatch-blank"></span></button>
+            <button type="button" class="journal-bg-btn" data-bg="lined" data-i18n-aria-label="app.journalBgLined" aria-label="줄무늬"><span class="journal-bg-swatch journal-bg-swatch-lined"></span></button>
+            <button type="button" class="journal-bg-btn" data-bg="dotted" data-i18n-aria-label="app.journalBgDotted" aria-label="점선"><span class="journal-bg-swatch journal-bg-swatch-dotted"></span></button>
+            <button type="button" class="journal-bg-btn" data-bg="grid" data-i18n-aria-label="app.journalBgGrid" aria-label="모눈종이"><span class="journal-bg-swatch journal-bg-swatch-grid"></span></button>
+          </div>
 
-      <g id="ticks-major"></g>
-      <g id="ticks-minor"></g>
-      <g id="tick-labels"></g>
+          <div class="journal-toolbar-divider"></div>
 
-      <!-- Phase 2~3: 알람 마커 -->
-      <g id="alarm-markers"></g>
+          <select id="journal-columns-select" class="journal-select journal-select-narrow" aria-label="단 수 선택" data-i18n-aria-label="app.journalColumnsLabel">
+            <option value="1" data-i18n="app.journalCols1">1단</option>
+            <option value="2" data-i18n="app.journalCols2">2단</option>
+            <option value="3" data-i18n="app.journalCols3">3단</option>
+          </select>
+        </div>
 
-      <g id="drag-preview"></g>
+        <div class="journal-toolbar-row">
+          <select id="journal-font-select" class="journal-select" aria-label="저널 글꼴" data-i18n-aria-label="app.journalFontLabel">
+            <option value="inherit" data-i18n="app.journalFontDefault">기본 글꼴</option>
+            <option value="'Noto Sans KR', sans-serif" data-i18n="app.fontNotoSans">고딕 - Noto Sans KR</option>
+            <option value="'Nanum Gothic', sans-serif" data-i18n="app.fontNanumGothic">고딕 - Nanum Gothic</option>
+            <option value="'Gowun Dodum', sans-serif" data-i18n="app.fontGowunDodum">고운 고딕 - Gowun Dodum</option>
+            <option value="'Jua', sans-serif" data-i18n="app.fontJua">둥근 고딕 - Jua</option>
+            <option value="'Gowun Batang', serif" data-i18n="app.fontGowunBatang">바탕체 - Gowun Batang</option>
+            <option value="'Nanum Myeongjo', serif" data-i18n="app.fontNanumMyeongjo">명조체 - Nanum Myeongjo</option>
+            <option value="'Gaegu', 'Nanum Pen Script', sans-serif" data-i18n="app.fontGaegu">손글씨 - Gaegu</option>
+            <option value="'Nanum Pen Script', cursive" data-i18n="app.fontNanumPen">손글씨 - Nanum Pen Script</option>
+            <option value="'Single Day', cursive" data-i18n="app.fontSingleDay">손글씨 - Single Day</option>
+            <option value="'Nanum Brush Script', cursive" data-i18n="app.fontNanumBrush">붓글씨 - Nanum Brush Script</option>
+            <option value="'Hi Melody', cursive" data-i18n="app.fontHiMelody">손글씨 - Hi Melody</option>
+          </select>
 
-      <g id="hand-group">
-        <g id="hand"></g>
-        <circle class="hand-center" cx="200" cy="200" r="6"></circle>
-      </g>
-    </svg>
+          <div class="journal-toolbar-divider"></div>
+
+          <div class="journal-font-size-control" role="group" aria-label="글자 크기" data-i18n-aria-label="app.journalFontSizeLabel">
+            <button type="button" class="journal-font-size-btn" id="journal-font-size-dec" aria-label="글자 작게" data-i18n-aria-label="app.journalFontSizeDec">−</button>
+            <span class="journal-font-size-value" id="journal-font-size-value">15px</span>
+            <button type="button" class="journal-font-size-btn" id="journal-font-size-inc" aria-label="글자 크게" data-i18n-aria-label="app.journalFontSizeInc">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="side-panel">
@@ -1319,6 +1629,12 @@
           <div class="range-field">
             <label for="hand-thickness"><span data-i18n="app.handThicknessLabel">바늘 두께</span><span id="hand-thickness-value">3px</span></label>
             <input type="range" id="hand-thickness" min="1" max="10" step="1" value="3">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="range-field">
+            <label for="clock-size"><span data-i18n="app.clockSizeLabel">시계 크기</span><span id="clock-size-value">840px</span></label>
+            <input type="range" id="clock-size" min="400" max="1000" step="20" value="840">
           </div>
         </div>
         <div class="row-2">
@@ -1429,6 +1745,15 @@
   var THEME_KEY = "roundClock_theme";
   var EXAMPLE_SEEDED_KEY = "roundClock_exampleSeeded";
   var HAND_SETTINGS_KEY = "roundClock_handSettings";
+  var JOURNAL_KEY_PREFIX = "roundClock_journal_";
+  var JOURNAL_BG_KEY = "roundClock_journalBg";
+  var JOURNAL_BG_STYLES = ["blank", "lined", "dotted", "grid"];
+  var JOURNAL_FONT_KEY = "roundClock_journalFont";
+  var JOURNAL_FONT_SIZE_KEY = "roundClock_journalFontSize";
+  var JOURNAL_FONT_SIZE_MIN = 12;
+  var JOURNAL_FONT_SIZE_MAX = 28;
+  var JOURNAL_FONT_SIZE_DEFAULT = 15;
+  var JOURNAL_COLUMNS_KEY = "roundClock_journalColumns";
 
   var CLOCK_STYLES = {
     donut: {
@@ -1480,6 +1805,11 @@
   var currentClockStyleKey = "donut";
   var BAND_THICKNESS_KEY = "roundClock_bandThickness";
   var clockThickness = {};
+  var CLOCK_SIZE_KEY = "roundClock_clockSize";
+  var CLOCK_SIZE_DEFAULT = 840;
+  var CLOCK_SIZE_MIN = 400;
+  var CLOCK_SIZE_MAX = 1000;
+  var clockSize = CLOCK_SIZE_DEFAULT;
 
   var PASTEL_COLORS = [
     "#EF4444", "#14B8A6", "#F97316", "#3B82F6", "#F59E0B",
@@ -1505,6 +1835,11 @@
     thickness: 3
   };
   var currentHandLength = 76;
+  var journalBgStyle = "blank";
+  var journalSaveTimers = {};
+  var journalFont = "inherit";
+  var journalFontSize = JOURNAL_FONT_SIZE_DEFAULT;
+  var journalColumns = 1;
 
   function t(key, vars) {
     return window.RoundClockI18n ? window.RoundClockI18n.t(key, vars) : key;
@@ -2518,7 +2853,203 @@
     }
     updatePastDateLock();
     loadEvents();
+    loadJournalText();
     refreshAll();
+  }
+
+  function journalColumnElements() {
+    return [
+      document.getElementById("journal-textarea"),
+      document.getElementById("journal-textarea-2"),
+      document.getElementById("journal-textarea-3")
+    ];
+  }
+
+  function journalStorageKey(col) {
+    var suffix = col > 1 ? "_c" + col : "";
+    return JOURNAL_KEY_PREFIX + viewingDateStr + suffix;
+  }
+
+  function loadJournalText() {
+    var els = journalColumnElements();
+    for (var i = 0; i < els.length; i++) {
+      if (!els[i]) {
+        continue;
+      }
+      var raw = localStorage.getItem(journalStorageKey(i + 1));
+      els[i].value = raw == null ? "" : raw;
+    }
+  }
+
+  function saveJournalTextForCol(col) {
+    var els = journalColumnElements();
+    var textarea = els[col - 1];
+    if (!textarea) {
+      return;
+    }
+    var key = journalStorageKey(col);
+    if (textarea.value) {
+      localStorage.setItem(key, textarea.value);
+    } else {
+      localStorage.removeItem(key);
+    }
+  }
+
+  function loadJournalBgStyle() {
+    var raw = localStorage.getItem(JOURNAL_BG_KEY);
+    journalBgStyle = JOURNAL_BG_STYLES.indexOf(raw) !== -1 ? raw : "blank";
+  }
+
+  function saveJournalBgStyle() {
+    localStorage.setItem(JOURNAL_BG_KEY, journalBgStyle);
+  }
+
+  function applyJournalBgStyle() {
+    journalColumnElements().forEach(function (textarea) {
+      if (!textarea) {
+        return;
+      }
+      JOURNAL_BG_STYLES.forEach(function (style) {
+        textarea.classList.toggle("journal-bg-" + style, style === journalBgStyle);
+      });
+    });
+    var buttons = document.querySelectorAll(".journal-bg-btn");
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].classList.toggle("selected", buttons[i].getAttribute("data-bg") === journalBgStyle);
+    }
+  }
+
+  function loadJournalFontSettings() {
+    var rawFont = localStorage.getItem(JOURNAL_FONT_KEY);
+    journalFont = rawFont || "inherit";
+
+    var rawSize = parseInt(localStorage.getItem(JOURNAL_FONT_SIZE_KEY), 10);
+    if (isNaN(rawSize) || rawSize < JOURNAL_FONT_SIZE_MIN || rawSize > JOURNAL_FONT_SIZE_MAX) {
+      rawSize = JOURNAL_FONT_SIZE_DEFAULT;
+    }
+    journalFontSize = rawSize;
+  }
+
+  function saveJournalFontSettings() {
+    localStorage.setItem(JOURNAL_FONT_KEY, journalFont);
+    localStorage.setItem(JOURNAL_FONT_SIZE_KEY, String(journalFontSize));
+  }
+
+  function applyJournalFontSettings() {
+    journalColumnElements().forEach(function (textarea) {
+      if (!textarea) {
+        return;
+      }
+      textarea.style.fontFamily = journalFont;
+      textarea.style.fontSize = journalFontSize + "px";
+      textarea.style.setProperty("--journal-line-height", (journalFontSize + 13) + "px");
+    });
+    var select = document.getElementById("journal-font-select");
+    if (select) {
+      select.value = journalFont;
+    }
+    var sizeValue = document.getElementById("journal-font-size-value");
+    if (sizeValue) {
+      sizeValue.textContent = journalFontSize + "px";
+    }
+  }
+
+  function loadJournalColumns() {
+    var raw = parseInt(localStorage.getItem(JOURNAL_COLUMNS_KEY), 10);
+    journalColumns = (raw === 2 || raw === 3) ? raw : 1;
+  }
+
+  function saveJournalColumns() {
+    localStorage.setItem(JOURNAL_COLUMNS_KEY, String(journalColumns));
+  }
+
+  function applyJournalColumns() {
+    var col2 = document.getElementById("journal-textarea-2");
+    var col3 = document.getElementById("journal-textarea-3");
+    if (col2) {
+      col2.style.display = journalColumns >= 2 ? "" : "none";
+    }
+    if (col3) {
+      col3.style.display = journalColumns >= 3 ? "" : "none";
+    }
+    var select = document.getElementById("journal-columns-select");
+    if (select) {
+      select.value = String(journalColumns);
+    }
+  }
+
+  function initJournal() {
+    journalColumnElements().forEach(function (textarea, idx) {
+      if (!textarea) {
+        return;
+      }
+      var col = idx + 1;
+      textarea.addEventListener("input", function () {
+        clearTimeout(journalSaveTimers[col]);
+        journalSaveTimers[col] = setTimeout(function () {
+          saveJournalTextForCol(col);
+        }, 300);
+      });
+      textarea.addEventListener("blur", function () {
+        saveJournalTextForCol(col);
+      });
+    });
+
+    var picker = document.getElementById("journal-bg-picker");
+    if (picker) {
+      picker.addEventListener("click", function (e) {
+        var btn = e.target.closest(".journal-bg-btn");
+        if (!btn) {
+          return;
+        }
+        journalBgStyle = btn.getAttribute("data-bg");
+        saveJournalBgStyle();
+        applyJournalBgStyle();
+      });
+    }
+
+    var fontSelect = document.getElementById("journal-font-select");
+    if (fontSelect) {
+      fontSelect.addEventListener("change", function () {
+        journalFont = fontSelect.value;
+        saveJournalFontSettings();
+        applyJournalFontSettings();
+      });
+    }
+
+    var decBtn = document.getElementById("journal-font-size-dec");
+    var incBtn = document.getElementById("journal-font-size-inc");
+    if (decBtn) {
+      decBtn.addEventListener("click", function () {
+        journalFontSize = Math.max(JOURNAL_FONT_SIZE_MIN, journalFontSize - 1);
+        saveJournalFontSettings();
+        applyJournalFontSettings();
+      });
+    }
+    if (incBtn) {
+      incBtn.addEventListener("click", function () {
+        journalFontSize = Math.min(JOURNAL_FONT_SIZE_MAX, journalFontSize + 1);
+        saveJournalFontSettings();
+        applyJournalFontSettings();
+      });
+    }
+
+    var colsSelect = document.getElementById("journal-columns-select");
+    if (colsSelect) {
+      colsSelect.addEventListener("change", function () {
+        journalColumns = parseInt(colsSelect.value, 10);
+        saveJournalColumns();
+        applyJournalColumns();
+      });
+    }
+
+    loadJournalBgStyle();
+    applyJournalBgStyle();
+    loadJournalFontSettings();
+    applyJournalFontSettings();
+    loadJournalColumns();
+    applyJournalColumns();
+    loadJournalText();
   }
 
   function updatePastDateLock() {
@@ -2914,6 +3445,14 @@
         if (handGroup) {
           handGroup.style.display = "none";
         }
+        var journalColumnsEl = clonedDoc.getElementById("journal-columns");
+        if (journalColumnsEl) {
+          journalColumnsEl.style.display = "none";
+        }
+        var journalToolbar = clonedDoc.getElementById("journal-toolbar");
+        if (journalToolbar) {
+          journalToolbar.style.display = "none";
+        }
       }
     }).then(
       function (fullCanvas) {
@@ -2957,6 +3496,14 @@
         var handGroup = clonedDoc.getElementById("hand-group");
         if (handGroup) {
           handGroup.style.display = "none";
+        }
+        var journalColumnsEl = clonedDoc.getElementById("journal-columns");
+        if (journalColumnsEl) {
+          journalColumnsEl.style.display = "none";
+        }
+        var journalToolbar = clonedDoc.getElementById("journal-toolbar");
+        if (journalToolbar) {
+          journalToolbar.style.display = "none";
         }
       }
     });
@@ -3375,6 +3922,40 @@
     });
   }
 
+  function loadClockSize() {
+    var raw = parseInt(localStorage.getItem(CLOCK_SIZE_KEY), 10);
+    if (isNaN(raw) || raw < CLOCK_SIZE_MIN || raw > CLOCK_SIZE_MAX) {
+      raw = CLOCK_SIZE_DEFAULT;
+    }
+    clockSize = raw;
+  }
+
+  function saveClockSize() {
+    localStorage.setItem(CLOCK_SIZE_KEY, String(clockSize));
+  }
+
+  function applyClockSize() {
+    var clockPanel = document.querySelector(".clock-panel");
+    if (clockPanel) {
+      clockPanel.style.setProperty("--clock-max-width", clockSize + "px");
+    }
+  }
+
+  function initClockSizeControl() {
+    var sizeInput = document.getElementById("clock-size");
+    var sizeValue = document.getElementById("clock-size-value");
+
+    sizeInput.value = clockSize;
+    sizeValue.textContent = clockSize + "px";
+
+    sizeInput.addEventListener("input", function (e) {
+      clockSize = parseInt(e.target.value, 10);
+      sizeValue.textContent = clockSize + "px";
+      saveClockSize();
+      applyClockSize();
+    });
+  }
+
   function initHandControls() {
     var shapeSelect = document.getElementById("hand-shape-select");
     var thicknessInput = document.getElementById("hand-thickness");
@@ -3407,19 +3988,23 @@
     loadClockStyle();
     loadBandThickness();
     loadHandSettings();
+    loadClockSize();
     renderSwatches();
     loadEvents();
     seedExampleEventsIfFirstVisit();
     applyClockStyle(currentClockStyleKey);
+    applyClockSize();
     initLabelControls();
     initTitleControls();
     initClockStyleControl();
     initBandThicknessControl();
+    initClockSizeControl();
     initHandControls();
     initThemeControl();
     initClockFaceDragCreate();
     initDateNav();
     initImportDate();
+    initJournal();
 
     document.getElementById("event-form").addEventListener("submit", handleFormSubmit);
     document.getElementById("alarm-enabled").addEventListener("change", function (e) {
