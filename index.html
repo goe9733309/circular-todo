@@ -17,6 +17,9 @@
 <script src="i18n.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script defer src="supabase-config.js"></script>
+<script defer src="cloud-sync.js"></script>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4418116063043264"
      crossorigin="anonymous"></script>
 <script>
@@ -1262,6 +1265,75 @@
     position: relative;
   }
 
+  .account-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 220px;
+    padding: 10px;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    box-shadow: 0 6px 18px var(--shadow-soft);
+    z-index: 50;
+  }
+
+  .account-menu.hidden {
+    display: none;
+  }
+
+  .account-email {
+    padding: 2px 4px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+
+  .account-status {
+    padding: 0 4px 8px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+
+  .account-menu button {
+    padding: 8px 12px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    text-align: left;
+    border: none;
+    background: none;
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .account-menu button:hover {
+    background: var(--border-soft);
+  }
+
+  .account-privacy-note {
+    padding: 8px 4px 0;
+    margin-top: 4px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+
+  .account-privacy-note a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
   .export-menu {
     position: absolute;
     top: calc(100% + 8px);
@@ -1426,6 +1498,11 @@
   <button type="button" class="notice-allow-btn" id="notif-allow-btn" data-i18n="app.notifAllow">허용하기</button>
   <button type="button" class="notice-dismiss-btn" id="notif-dismiss-btn" aria-label="닫기" data-i18n-aria-label="app.notifClose">✕</button>
 </div>
+<div class="notice-banner" id="cloud-import-banner" hidden>
+  <span id="cloud-import-text"></span>
+  <button type="button" class="notice-allow-btn" id="cloud-import-btn" data-i18n="auth.importBtn">가져오기</button>
+  <button type="button" class="notice-dismiss-btn" id="cloud-import-dismiss" aria-label="닫기" data-i18n-aria-label="app.notifClose">✕</button>
+</div>
 
 <nav class="site-nav">
   <a href="index.html" class="active" data-i18n="nav.clock">🕐 시계</a>
@@ -1447,6 +1524,19 @@
     </div>
   </div>
   <button type="button" class="site-nav-lang" id="lang-toggle"></button>
+  <div class="export-menu-wrap" id="account-wrap" hidden>
+    <button type="button" class="site-nav-lang" id="account-toggle">👤</button>
+    <div class="account-menu hidden" id="account-menu">
+      <div class="account-email" id="account-email" hidden></div>
+      <div class="account-status" id="cloud-status"></div>
+      <button type="button" id="account-signin" data-i18n="auth.signInGoogle">🔑 Google로 로그인</button>
+      <button type="button" id="account-signout" hidden data-i18n="auth.signOut">↩️ 로그아웃</button>
+      <div class="account-privacy-note">
+        <span data-i18n="auth.privacyNote">로그인하면 일정이 계정에 저장됩니다. 로그인하지 않으면 이 브라우저에만 저장됩니다.</span>
+        <a href="privacy.html" data-i18n="auth.privacyLink">개인정보 처리방침</a>
+      </div>
+    </div>
+  </div>
 </nav>
 
 <div class="app">
@@ -1976,6 +2066,7 @@
 
   function saveLabelSettings() {
     localStorage.setItem(LABEL_SETTINGS_KEY, JSON.stringify(labelSettings));
+    cloudTouchSettings();
   }
 
   function loadTitleSettings() {
@@ -2016,6 +2107,7 @@
 
   function saveTitleSettings() {
     localStorage.setItem(TITLE_SETTINGS_KEY, JSON.stringify(titleSettings));
+    cloudTouchSettings();
   }
 
   function loadHandSettings() {
@@ -2038,6 +2130,7 @@
 
   function saveHandSettings() {
     localStorage.setItem(HAND_SETTINGS_KEY, JSON.stringify(handSettings));
+    cloudTouchSettings();
   }
 
   function renderHandShape() {
@@ -2107,6 +2200,7 @@
 
   function saveClockStyle() {
     localStorage.setItem(CLOCK_STYLE_KEY, currentClockStyleKey);
+    cloudTouchSettings();
   }
 
   function applyTheme(theme) {
@@ -2124,6 +2218,7 @@
 
   function saveTheme(theme) {
     localStorage.setItem(THEME_KEY, theme);
+    cloudTouchSettings();
   }
 
   function loadBandThickness() {
@@ -2143,6 +2238,7 @@
 
   function saveBandThickness() {
     localStorage.setItem(BAND_THICKNESS_KEY, JSON.stringify(clockThickness));
+    cloudTouchSettings();
   }
 
   function adjustClockSpacing() {
@@ -2819,6 +2915,21 @@
     return "roundClock_events_" + viewingDateStr;
   }
 
+  // Cloud sync hooks. localStorage stays the source of truth the app reads;
+  // these only ask cloud-sync.js to mirror a change upward, and do nothing at
+  // all in guest mode (nobody signed in, or no Supabase config).
+  function cloudTouchDaily(dateStr) {
+    if (window.RoundClockCloud) {
+      window.RoundClockCloud.touchDaily(dateStr || viewingDateStr);
+    }
+  }
+
+  function cloudTouchSettings() {
+    if (window.RoundClockCloud) {
+      window.RoundClockCloud.touchSettings();
+    }
+  }
+
   function loadEvents() {
     var raw = localStorage.getItem(storageKey());
     if (!raw) {
@@ -2839,6 +2950,7 @@
       events: events
     };
     localStorage.setItem(storageKey(), JSON.stringify(payload));
+    cloudTouchDaily();
   }
 
   function setViewingDate(dateStr) {
@@ -2893,6 +3005,7 @@
     } else {
       localStorage.removeItem(key);
     }
+    cloudTouchDaily();
   }
 
   function loadJournalBgStyle() {
@@ -2902,6 +3015,7 @@
 
   function saveJournalBgStyle() {
     localStorage.setItem(JOURNAL_BG_KEY, journalBgStyle);
+    cloudTouchSettings();
   }
 
   function applyJournalBgStyle() {
@@ -2933,6 +3047,7 @@
   function saveJournalFontSettings() {
     localStorage.setItem(JOURNAL_FONT_KEY, journalFont);
     localStorage.setItem(JOURNAL_FONT_SIZE_KEY, String(journalFontSize));
+    cloudTouchSettings();
   }
 
   function applyJournalFontSettings() {
@@ -2961,6 +3076,7 @@
 
   function saveJournalColumns() {
     localStorage.setItem(JOURNAL_COLUMNS_KEY, String(journalColumns));
+    cloudTouchSettings();
   }
 
   function applyJournalColumns() {
@@ -3932,6 +4048,7 @@
 
   function saveClockSize() {
     localStorage.setItem(CLOCK_SIZE_KEY, String(clockSize));
+    cloudTouchSettings();
   }
 
   function applyClockSize() {
@@ -3979,6 +4096,90 @@
     });
   }
 
+  // Push current state back into the settings controls. The init*Control
+  // functions do this too, but they also bind listeners — this is the
+  // rebind-free half, for when a cloud pull replaces the stored settings.
+  function syncSettingsControls() {
+    function setValue(id, value) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.value = value;
+      }
+    }
+    function setText(id, text) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.textContent = text;
+      }
+    }
+
+    setValue("label-font-size", labelSettings.fontSize);
+    setText("label-font-size-value", labelSettings.fontSize + "px");
+
+    var lang = window.RoundClockI18n ? window.RoundClockI18n.getLang() : "ko";
+    setValue("clock-title-input", titleSettings.titleByLang[lang]);
+    document.querySelectorAll('input[name="title-mode"]').forEach(function (radio) {
+      radio.checked = radio.value === titleSettings.mode;
+    });
+    setValue("clock-font-select", titleSettings.font);
+    setValue("title-font-size", titleSettings.titleFontSize);
+    setText("title-font-size-value", titleSettings.titleFontSize + "px");
+    setValue("time-font-size", titleSettings.timeFontSize);
+    setText("time-font-size-value", titleSettings.timeFontSize + "px");
+
+    setValue("clock-style-select", currentClockStyleKey);
+
+    var thickness = clockThickness[currentClockStyleKey];
+    if (typeof thickness === "number") {
+      setValue("band-thickness", thickness);
+      setText("band-thickness-value", thickness + "px");
+    }
+
+    setValue("clock-size", clockSize);
+    setText("clock-size-value", clockSize + "px");
+
+    setValue("hand-shape-select", handSettings.shape);
+    setValue("hand-thickness", handSettings.thickness);
+    setText("hand-thickness-value", handSettings.thickness + "px");
+
+    var theme = loadTheme();
+    setValue("theme-select", theme);
+    applyTheme(theme);
+  }
+
+  // Called by cloud-sync.js after it has mirrored remote data into
+  // localStorage: re-read everything the same way a fresh load would.
+  function reloadFromLocal() {
+    loadLabelSettings();
+    loadTitleSettings();
+    loadClockStyle();
+    loadBandThickness();
+    loadHandSettings();
+    loadClockSize();
+    loadJournalBgStyle();
+    loadJournalFontSettings();
+    loadJournalColumns();
+
+    syncSettingsControls();
+    applyClockStyle(currentClockStyleKey);
+    applyClockSize();
+    applyTitleSettings();
+    applyJournalBgStyle();
+    applyJournalFontSettings();
+    applyJournalColumns();
+    renderHandShape();
+
+    loadEvents();
+    loadJournalText();
+    refreshAll();
+
+    // A pulled language preference has to be re-applied through i18n so the
+    // static translations and the toggle label follow.
+    if (window.RoundClockI18n) {
+      window.RoundClockI18n.setLang(window.RoundClockI18n.getLang());
+    }
+  }
+
   function init() {
     currentDateStr = todayDateStr();
     viewingDateStr = currentDateStr;
@@ -4014,6 +4215,16 @@
     initNotificationBanner();
     initExportMenu();
 
+    if (window.RoundClockCloud) {
+      window.RoundClockCloud.init({
+        getViewingDate: function () {
+          return viewingDateStr;
+        },
+        reloadFromLocal: reloadFromLocal,
+        showToast: showToast
+      });
+    }
+
     updateClockHand();
     setInterval(updateClockHand, 1000);
     setInterval(checkAlarms, ALARM_CHECK_INTERVAL_MS);
@@ -4027,6 +4238,7 @@
     window.addEventListener("roundclock:langchange", function () {
       applyTitleSettings();
       refreshAll();
+      cloudTouchSettings();
     });
   }
 
